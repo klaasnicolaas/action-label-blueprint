@@ -31,6 +31,7 @@ describe('parseLabelConfig', () => {
   })
 
   it.each([
+    ['an empty document', '', 'Unable to parse label configuration'],
     ['an empty list', '[]', 'non-empty labels array'],
     ['an invalid color', '- name: bug\n  color: red', 'six-digit hexadecimal'],
     [
