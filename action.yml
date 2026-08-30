@@ -23,8 +23,12 @@ inputs:
     description: "Delete labels that are not present in the configuration."
     required: false
     default: "false"
+  mode:
+    description: "Operating mode: sync applies changes, preview reports them, and check reports them and fails on drift."
+    required: false
+    default: "sync"
   dry-run:
-    description: "Plan and report changes without modifying labels."
+    description: "Deprecated alias for mode: preview. Retained for backwards compatibility."
     required: false
     default: "false"
 

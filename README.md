@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  Create, update and safely rename labels from one configuration, with dry-run previews, optional pruning and multi-repository support.
+  Create, update and safely rename labels from one configuration, with preview and check modes, optional pruning and multi-repository support.
 </p>
 
 # Label Blueprint
@@ -42,7 +42,7 @@ same configuration can optionally be applied to multiple repositories.
 - **Automatic Reconciliation**: Create missing labels and update names, colors and descriptions that have changed.
 - **Assignment-Safe Renames**: Rename existing labels through aliases while preserving their issue and pull request assignments.
 - **Non-Destructive by Default**: Keep unmanaged labels unless pruning is explicitly enabled.
-- **Dry-Run Preview**: Review planned creates, updates, renames and deletions in the job summary before applying them.
+- **Explicit Operating Modes**: Synchronize labels, preview changes or enforce the blueprint in CI.
 - **Strict Validation**: Detect invalid colors, duplicate names and ambiguous aliases before repository changes start.
 - **Workflow-Friendly Results**: Review synchronization counts in the job summary and consume them through action outputs.
 - **Optional Multi-Repository Sync**: Apply the same label configuration to multiple repositories when needed.
@@ -112,13 +112,27 @@ Preview the exact changes without calling create, update or delete endpoints:
 ```yaml
 - uses: klaasnicolaas/action-label-blueprint@v1
   with:
-    dry-run: true
+    mode: preview
     prune: true
 ```
 
-After reviewing the job summary, remove `dry-run`. Enabling `prune` deletes all
-repository labels that are not represented by a configured label or a matched
-alias. Pruning is intentionally disabled by default.
+After reviewing the job summary, switch `mode` back to `sync`. Enabling
+`prune` deletes all repository labels that are not represented by a configured
+label or a matched alias. Pruning is intentionally disabled by default.
+
+### Enforce the blueprint in CI
+
+Use `check` mode to create a read-only CI check that fails when one or more
+repositories differ from the blueprint:
+
+```yaml
+- uses: klaasnicolaas/action-label-blueprint@v1
+  with:
+    mode: check
+```
+
+The action still writes its outputs and job summary before failing, so the
+planned changes remain available for review. Check mode never modifies labels.
 
 ### Remote configuration
 
@@ -188,17 +202,29 @@ so pruning is disabled by default.
 - Default: `false`
 - Usage: **Optional**
 
+### `mode`
+
+Choose how the action handles its synchronization plan:
+
+- `sync`: Apply planned changes.
+- `preview`: Report planned changes without modifying labels.
+- `check`: Report planned changes without modifying labels and fail when drift is detected.
+
+- Default: `sync`
+- Usage: **Optional**
+
 ### `dry-run`
 
-Report planned changes without creating, updating or deleting labels.
+A backwards-compatible alias for `mode: preview`. New workflows should use
+`mode`. When combined with `mode: check`, check mode takes precedence.
 
 - Default: `false`
 - Usage: **Optional**
 
 ## Outputs
 
-The following outputs can be used in subsequent workflow steps. In dry-run
-mode, the counts describe planned changes.
+The following outputs can be used in subsequent workflow steps. In `preview`
+and `check` modes, the counts describe planned changes.
 
 ### `repositories`
 
@@ -262,4 +288,3 @@ Thank you for being involved! :heart_eyes:
 ## License
 
 Distributed under the **Apache License 2.0** license. See [`LICENSE`](LICENSE) for more information.
-
