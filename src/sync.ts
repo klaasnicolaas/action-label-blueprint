@@ -22,11 +22,12 @@ function globPattern(pattern: string): RegExp {
   return new RegExp(`${source}$`, 'iu')
 }
 
-export function matchesPruneIgnore(
-  labelName: string,
+export function createPruneIgnoreMatcher(
   patterns: string[],
-): boolean {
-  return patterns.some((pattern) => globPattern(pattern).test(labelName))
+): (labelName: string) => boolean {
+  const compiled = patterns.map(globPattern)
+  return (labelName) =>
+    compiled.some((pattern) => pattern.test(labelName))
 }
 
 export interface LabelPlan {
@@ -57,6 +58,7 @@ export function planLabelChanges(
   const claimed = new Set<string>()
   const changes: LabelChange[] = []
   const ignored: RepositoryLabel[] = []
+  const isIgnored = createPruneIgnoreMatcher(pruneIgnore)
 
   for (const label of desired) {
     const exact = currentByName.get(keyOf(label.name))
@@ -100,7 +102,7 @@ export function planLabelChanges(
   if (prune) {
     for (const label of current) {
       if (!claimed.has(keyOf(label.name))) {
-        if (matchesPruneIgnore(label.name, pruneIgnore)) {
+        if (isIgnored(label.name)) {
           ignored.push(label)
         } else {
           changes.push({ kind: 'delete', name: label.name, current: label })

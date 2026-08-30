@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  matchesPruneIgnore,
+  createPruneIgnoreMatcher,
   planLabelChanges,
   syncRepository,
 } from '../sync.js'
@@ -108,17 +108,25 @@ describe('planLabelChanges', () => {
   })
 })
 
-describe('matchesPruneIgnore', () => {
+describe('createPruneIgnoreMatcher', () => {
   it('matches exact names, * and ? case-insensitively', () => {
-    expect(matchesPruneIgnore('GitHub-Actions', ['github-actions'])).toBe(true)
-    expect(matchesPruneIgnore('Release:Stable', ['release:*'])).toBe(true)
-    expect(matchesPruneIgnore('bot-1', ['BOT-?'])).toBe(true)
-    expect(matchesPruneIgnore('bot-12', ['bot-?'])).toBe(false)
+    const matches = createPruneIgnoreMatcher([
+      'github-actions',
+      'release:*',
+      'BOT-?',
+    ])
+
+    expect(matches('GitHub-Actions')).toBe(true)
+    expect(matches('Release:Stable')).toBe(true)
+    expect(matches('bot-1')).toBe(true)
+    expect(matches('bot-12')).toBe(false)
   })
 
   it('treats other regular-expression characters literally', () => {
-    expect(matchesPruneIgnore('app[bot]', ['app[bot]'])).toBe(true)
-    expect(matchesPruneIgnore('appb', ['app[bot]'])).toBe(false)
+    const matches = createPruneIgnoreMatcher(['app[bot]'])
+
+    expect(matches('app[bot]')).toBe(true)
+    expect(matches('appb')).toBe(false)
   })
 })
 
