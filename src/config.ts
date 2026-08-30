@@ -332,7 +332,7 @@ async function loadBlueprint(
       `Configuration cycle detected: ${[...chain, source.location].join(' -> ')}`,
     )
   }
-  if (chain.length > MAX_CONFIG_DEPTH) {
+  if (chain.length >= MAX_CONFIG_DEPTH) {
     throw new Error(
       `Configuration extends depth exceeds ${MAX_CONFIG_DEPTH}: ${[...chain, source.location].join(' -> ')}`,
     )

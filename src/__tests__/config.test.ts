@@ -253,12 +253,26 @@ labels:
 
   it('enforces the maximum import depth', async () => {
     const directory = await temporaryDirectory()
-    for (let index = 0; index <= MAX_CONFIG_DEPTH + 1; index += 1) {
-      const next =
-        index <= MAX_CONFIG_DEPTH ? `extends: ./level-${index + 1}.yml\n` : ''
-      await writeFile(join(directory, `level-${index}.yml`), next)
+    for (let index = 0; index < MAX_CONFIG_DEPTH; index += 1) {
+      const content =
+        index < MAX_CONFIG_DEPTH - 1
+          ? `extends: ./level-${index + 1}.yml\n`
+          : 'labels:\n  - name: bug\n    color: d73a4a\n'
+      await writeFile(join(directory, `level-${index}.yml`), content)
     }
 
+    await expect(
+      loadLabelConfig(join(directory, 'level-0.yml')),
+    ).resolves.toHaveLength(1)
+
+    await writeFile(
+      join(directory, `level-${MAX_CONFIG_DEPTH - 1}.yml`),
+      `extends: ./level-${MAX_CONFIG_DEPTH}.yml\n`,
+    )
+    await writeFile(
+      join(directory, `level-${MAX_CONFIG_DEPTH}.yml`),
+      'labels:\n  - name: bug\n    color: d73a4a\n',
+    )
     await expect(
       loadLabelConfig(join(directory, 'level-0.yml')),
     ).rejects.toThrow(`Configuration extends depth exceeds ${MAX_CONFIG_DEPTH}`)
