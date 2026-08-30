@@ -137,7 +137,7 @@ planned changes remain available for review. Check mode never modifies labels.
 
 ### Review detailed changes
 
-The job summary keeps its aggregate repository table and adds a collapsed detail table for every repository with changes. Each row identifies a create, update, rename or delete and shows the relevant before-and-after label name, color and description. Unchanged fields in updates are omitted.
+The job summary keeps its aggregate repository table and adds a collapsed detail table for every repository with changes. Each row identifies a create, update, rename or delete and shows the relevant before-and-after label name, color and description. Unchanged fields in updates are shown as an em dash (`—`).
 
 Detail headings distinguish changes that were `planned` in `preview` and `check` modes from changes that were `applied` in `sync` mode. Values are escaped before rendering, and colors are displayed as normalized hexadecimal values. To keep large summaries manageable, detail tables show at most the first 100 changes per repository and include a truncation notice.
 
