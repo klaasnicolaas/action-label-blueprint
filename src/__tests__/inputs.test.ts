@@ -27,8 +27,8 @@ describe('parseMode', () => {
   })
 
   it('rejects unsupported modes', () => {
-    expect(() => parseMode('apply', false)).toThrow(
-      'expected sync, preview, or check',
+    expect(() => parseMode(' APPLY ', false)).toThrow(
+      'Invalid mode "apply": expected sync, preview, or check',
     )
   })
 })

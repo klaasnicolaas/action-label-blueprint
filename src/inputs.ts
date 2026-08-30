@@ -13,7 +13,9 @@ export interface ActionInputs {
 export function parseMode(value: string, legacyDryRun: boolean): ActionMode {
   const mode = value.trim().toLowerCase() || 'sync'
   if (mode !== 'sync' && mode !== 'preview' && mode !== 'check') {
-    throw new Error('Invalid mode: expected sync, preview, or check')
+    throw new Error(
+      `Invalid mode "${mode}": expected sync, preview, or check`,
+    )
   }
   return legacyDryRun && mode === 'sync' ? 'preview' : mode
 }

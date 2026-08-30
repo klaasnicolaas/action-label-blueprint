@@ -115,6 +115,39 @@ describe('run', () => {
     expect(mocks.setFailed).not.toHaveBeenCalled()
   })
 
+  it('applies changes and uses the default heading in sync mode', async () => {
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one'],
+      prune: false,
+      mode: 'sync',
+    })
+    mocks.syncRepository.mockResolvedValue({
+      result: {
+        repository: 'owner/one',
+        created: 1,
+        updated: 0,
+        deleted: 0,
+        unchanged: 0,
+        dryRun: false,
+      },
+      changes: [{ kind: 'create', name: 'bug' }],
+    })
+
+    await run()
+
+    expect(mocks.syncRepository).toHaveBeenCalledWith(
+      expect.anything(),
+      'owner/one',
+      expect.any(Array),
+      { prune: false, dryRun: false },
+    )
+    expect(mocks.summary.addHeading).toHaveBeenCalledWith('Label Blueprint')
+    expect(mocks.notice).not.toHaveBeenCalled()
+    expect(mocks.setFailed).not.toHaveBeenCalled()
+  })
+
   it('continues after a repository failure and fails at the end', async () => {
     mocks.syncRepository
       .mockRejectedValueOnce(new Error('Forbidden'))
@@ -135,9 +168,7 @@ describe('run', () => {
     expect(mocks.syncRepository).toHaveBeenCalledTimes(2)
     expect(mocks.error).toHaveBeenCalledWith('owner/one: Forbidden')
     expect(mocks.setFailed).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Failed to synchronize 1 repository/repositories',
-      ),
+      expect.stringContaining('Failed to synchronize 1 repository'),
     )
   })
 
@@ -189,7 +220,7 @@ describe('run', () => {
     expect(mocks.setOutput).toHaveBeenCalledWith('deleted', 1)
     expect(mocks.summary.write).toHaveBeenCalled()
     expect(mocks.setFailed).toHaveBeenCalledWith(
-      'Label drift detected in 2 repository/repositories affecting 3 label(s)',
+      'Label drift detected in 2 repositories affecting 3 labels',
     )
     expect(mocks.summary.write.mock.invocationCallOrder[0]).toBeLessThan(
       mocks.setFailed.mock.invocationCallOrder[0]!,
@@ -249,7 +280,7 @@ describe('run', () => {
 
     expect(mocks.setFailed).toHaveBeenCalledWith(
       expect.stringMatching(
-        /Failed to synchronize 1 repository\/repositories:[\s\S]*Label drift detected in 1 repository\/repositories affecting 1 label\(s\)/,
+        /Failed to synchronize 1 repository:[\s\S]*Label drift detected in 1 repository affecting 1 label/,
       ),
     )
   })

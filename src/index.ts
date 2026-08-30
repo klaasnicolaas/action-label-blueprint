@@ -20,6 +20,14 @@ function total(results: SyncResult[], key: keyof SyncResult): number {
   }, 0)
 }
 
+function formatCount(
+  count: number,
+  singular: string,
+  plural = `${singular}s`,
+): string {
+  return `${count} ${count === 1 ? singular : plural}`
+}
+
 export async function run(): Promise<void> {
   try {
     const defaultRepository = process.env.GITHUB_REPOSITORY ?? ''
@@ -98,7 +106,7 @@ export async function run(): Promise<void> {
     const problems: string[] = []
     if (failures.length > 0) {
       problems.push(
-        `Failed to synchronize ${failures.length} repository/repositories:\n${failures.join('\n')}`,
+        `Failed to synchronize ${formatCount(failures.length, 'repository', 'repositories')}:\n${failures.join('\n')}`,
       )
     }
 
@@ -109,7 +117,7 @@ export async function run(): Promise<void> {
       const driftedLabels = created + updated + deleted
       if (driftedLabels > 0) {
         problems.push(
-          `Label drift detected in ${driftedRepositories} repository/repositories affecting ${driftedLabels} label(s)`,
+          `Label drift detected in ${formatCount(driftedRepositories, 'repository', 'repositories')} affecting ${formatCount(driftedLabels, 'label')}`,
         )
       }
     }
