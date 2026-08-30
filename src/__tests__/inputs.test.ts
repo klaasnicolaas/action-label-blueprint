@@ -7,7 +7,31 @@ const coreMocks = vi.hoisted(() => ({
 
 vi.mock('@actions/core', () => coreMocks)
 
-import { getInputs, parseRepositories } from '../inputs.js'
+import { getInputs, parseMode, parseRepositories } from '../inputs.js'
+
+describe('parseMode', () => {
+  it.each(['sync', 'preview', 'check'] as const)('accepts %s mode', (mode) => {
+    expect(parseMode(mode, false)).toBe(mode)
+  })
+
+  it('defaults to sync mode', () => {
+    expect(parseMode('', false)).toBe('sync')
+  })
+
+  it('maps the legacy dry-run input to preview mode', () => {
+    expect(parseMode('sync', true)).toBe('preview')
+  })
+
+  it('keeps an explicit check mode when legacy dry-run is enabled', () => {
+    expect(parseMode('check', true)).toBe('check')
+  })
+
+  it('rejects unsupported modes', () => {
+    expect(() => parseMode('apply', false)).toThrow(
+      'expected sync, preview, or check',
+    )
+  })
+})
 
 describe('parseRepositories', () => {
   it('uses the current repository by default', () => {
@@ -53,7 +77,7 @@ describe('getInputs', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: true,
-      dryRun: false,
+      mode: 'sync',
     })
   })
 })

@@ -55,7 +55,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
-      dryRun: true,
+      mode: 'preview',
     })
     mocks.loadLabelConfig.mockResolvedValue([
       {
@@ -104,7 +104,7 @@ describe('run', () => {
     await run()
 
     expect(mocks.notice).toHaveBeenCalledWith(
-      'Dry-run enabled: no labels will be modified',
+      'Preview mode enabled: no labels will be modified',
     )
     expect(mocks.info).toHaveBeenCalledWith('update documentation → docs')
     expect(mocks.setOutput).toHaveBeenCalledWith('repositories', 2)
@@ -137,6 +137,119 @@ describe('run', () => {
     expect(mocks.setFailed).toHaveBeenCalledWith(
       expect.stringContaining(
         'Failed to synchronize 1 repository/repositories',
+      ),
+    )
+  })
+
+  it('fails after reporting outputs and the summary when drift is detected', async () => {
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one', 'owner/two'],
+      prune: false,
+      mode: 'check',
+    })
+    mocks.syncRepository
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/one',
+          created: 1,
+          updated: 1,
+          deleted: 0,
+          unchanged: 0,
+          dryRun: true,
+        },
+        changes: [],
+      })
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/two',
+          created: 0,
+          updated: 0,
+          deleted: 1,
+          unchanged: 1,
+          dryRun: true,
+        },
+        changes: [],
+      })
+
+    await run()
+
+    expect(mocks.notice).toHaveBeenCalledWith(
+      'Check mode enabled: no labels will be modified and drift will fail the run',
+    )
+    expect(mocks.syncRepository).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.any(String),
+      expect.any(Array),
+      { prune: false, dryRun: true },
+    )
+    expect(mocks.setOutput).toHaveBeenCalledWith('created', 1)
+    expect(mocks.setOutput).toHaveBeenCalledWith('updated', 1)
+    expect(mocks.setOutput).toHaveBeenCalledWith('deleted', 1)
+    expect(mocks.summary.write).toHaveBeenCalled()
+    expect(mocks.setFailed).toHaveBeenCalledWith(
+      'Label drift detected in 2 repository/repositories affecting 3 label(s)',
+    )
+    expect(mocks.summary.write.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.setFailed.mock.invocationCallOrder[0]!,
+    )
+  })
+
+  it('succeeds in check mode when all repositories are synchronized', async () => {
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one', 'owner/two'],
+      prune: false,
+      mode: 'check',
+    })
+    mocks.syncRepository.mockImplementation(
+      async (_api, repository: string) => ({
+        result: {
+          repository,
+          created: 0,
+          updated: 0,
+          deleted: 0,
+          unchanged: 1,
+          dryRun: true,
+        },
+        changes: [{ kind: 'unchanged', name: 'bug' }],
+      }),
+    )
+
+    await run()
+
+    expect(mocks.setFailed).not.toHaveBeenCalled()
+  })
+
+  it('reports repository failures together with detected drift', async () => {
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one', 'owner/two'],
+      prune: false,
+      mode: 'check',
+    })
+    mocks.syncRepository
+      .mockRejectedValueOnce(new Error('Forbidden'))
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/two',
+          created: 1,
+          updated: 0,
+          deleted: 0,
+          unchanged: 0,
+          dryRun: true,
+        },
+        changes: [{ kind: 'create', name: 'bug' }],
+      })
+
+    await run()
+
+    expect(mocks.setFailed).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /Failed to synchronize 1 repository\/repositories:[\s\S]*Label drift detected in 1 repository\/repositories affecting 1 label\(s\)/,
       ),
     )
   })

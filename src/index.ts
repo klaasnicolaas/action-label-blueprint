@@ -26,20 +26,28 @@ export async function run(): Promise<void> {
     const inputs = getInputs(defaultRepository)
     const labels = await loadLabelConfig(inputs.labelsFile)
     const api = createLabelApi(github.getOctokit(inputs.token))
+    const dryRun = inputs.mode !== 'sync'
     const results: SyncResult[] = []
     const failures: string[] = []
 
     core.info(
       `Loaded ${labels.length} labels for ${inputs.repositories.length} repository target(s)`,
     )
-    if (inputs.dryRun) {
-      core.notice('Dry-run enabled: no labels will be modified')
+    if (inputs.mode === 'preview') {
+      core.notice('Preview mode enabled: no labels will be modified')
+    } else if (inputs.mode === 'check') {
+      core.notice(
+        'Check mode enabled: no labels will be modified and drift will fail the run',
+      )
     }
 
     for (const repository of inputs.repositories) {
       await core.group(`Synchronizing ${repository}`, async () => {
         try {
-          const sync = await syncRepository(api, repository, labels, inputs)
+          const sync = await syncRepository(api, repository, labels, {
+            prune: inputs.prune,
+            dryRun,
+          })
           results.push(sync.result)
           for (const change of sync.changes) {
             core.info(describeChange(change))
@@ -64,7 +72,11 @@ export async function run(): Promise<void> {
     core.setOutput('summary', JSON.stringify(results))
 
     await core.summary
-      .addHeading(inputs.dryRun ? 'Label Blueprint dry-run' : 'Label Blueprint')
+      .addHeading(
+        inputs.mode === 'sync'
+          ? 'Label Blueprint'
+          : `Label Blueprint ${inputs.mode}`,
+      )
       .addTable([
         [
           { data: 'Repository', header: true },
@@ -83,10 +95,27 @@ export async function run(): Promise<void> {
       ])
       .write()
 
+    const problems: string[] = []
     if (failures.length > 0) {
-      throw new Error(
+      problems.push(
         `Failed to synchronize ${failures.length} repository/repositories:\n${failures.join('\n')}`,
       )
+    }
+
+    if (inputs.mode === 'check') {
+      const driftedRepositories = results.filter(
+        (result) => result.created + result.updated + result.deleted > 0,
+      ).length
+      const driftedLabels = created + updated + deleted
+      if (driftedLabels > 0) {
+        problems.push(
+          `Label drift detected in ${driftedRepositories} repository/repositories affecting ${driftedLabels} label(s)`,
+        )
+      }
+    }
+
+    if (problems.length > 0) {
+      throw new Error(problems.join('\n\n'))
     }
   } catch (error) {
     core.setFailed((error as Error).message)

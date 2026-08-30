@@ -1,11 +1,21 @@
 import * as core from '@actions/core'
 
+export type ActionMode = 'sync' | 'preview' | 'check'
+
 export interface ActionInputs {
   token: string
   labelsFile: string
   repositories: string[]
   prune: boolean
-  dryRun: boolean
+  mode: ActionMode
+}
+
+export function parseMode(value: string, legacyDryRun: boolean): ActionMode {
+  const mode = value.trim().toLowerCase() || 'sync'
+  if (mode !== 'sync' && mode !== 'preview' && mode !== 'check') {
+    throw new Error('Invalid mode: expected sync, preview, or check')
+  }
+  return legacyDryRun && mode === 'sync' ? 'preview' : mode
 }
 
 export function parseRepositories(
@@ -34,6 +44,7 @@ export function parseRepositories(
 }
 
 export function getInputs(defaultRepository: string): ActionInputs {
+  const legacyDryRun = core.getBooleanInput('dry-run')
   return {
     token: core.getInput('github-token', { required: true }),
     labelsFile: core.getInput('labels-file', { required: true }),
@@ -42,6 +53,6 @@ export function getInputs(defaultRepository: string): ActionInputs {
       defaultRepository,
     ),
     prune: core.getBooleanInput('prune'),
-    dryRun: core.getBooleanInput('dry-run'),
+    mode: parseMode(core.getInput('mode'), legacyDryRun),
   }
 }
