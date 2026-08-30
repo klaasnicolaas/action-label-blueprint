@@ -27664,7 +27664,7 @@ async function run() {
     setOutput("deleted", deleted);
     setOutput("unchanged", unchanged);
     setOutput("summary", JSON.stringify(results));
-    await summary.addHeading(inputs.dryRun ? "Label sync dry-run" : "Label sync").addTable([
+    await summary.addHeading(inputs.dryRun ? "Label Blueprint dry-run" : "Label Blueprint").addTable([
       [
         { data: "Repository", header: true },
         { data: "Created", header: true },

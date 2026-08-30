@@ -1,5 +1,5 @@
 {
-  "name": "action-label-sync",
+  "name": "action-label-blueprint",
   "description": "Synchronize GitHub labels from a declarative configuration",
   "version": "0.0.0",
   "license": "Apache-2.0",
@@ -21,12 +21,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/klaasnicolaas/action-label-sync.git"
+    "url": "git+https://github.com/klaasnicolaas/action-label-blueprint.git"
   },
   "bugs": {
-    "url": "https://github.com/klaasnicolaas/action-label-sync/issues"
+    "url": "https://github.com/klaasnicolaas/action-label-blueprint/issues"
   },
-  "homepage": "https://github.com/klaasnicolaas/action-label-sync#readme",
+  "homepage": "https://github.com/klaasnicolaas/action-label-blueprint#readme",
   "keywords": [
     "actions",
     "github",

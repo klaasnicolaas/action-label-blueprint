@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: ⤵️ Check out code from GitHub
         uses: actions/checkout@v7.0.1
-      - name: 🚀 Run Label Sync
+      - name: 🚀 Run Label Blueprint
         uses: ./
         with:
           prune: true

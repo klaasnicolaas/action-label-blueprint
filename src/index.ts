@@ -64,7 +64,7 @@ export async function run(): Promise<void> {
     core.setOutput('summary', JSON.stringify(results))
 
     await core.summary
-      .addHeading(inputs.dryRun ? 'Label sync dry-run' : 'Label sync')
+      .addHeading(inputs.dryRun ? 'Label Blueprint dry-run' : 'Label Blueprint')
       .addTable([
         [
           { data: 'Repository', header: true },

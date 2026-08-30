@@ -1,6 +1,6 @@
 <p align="center">
   <picture>
-    <img alt="Label Sync" src="https://raw.githubusercontent.com/klaasnicolaas/action-label-sync/main/.github/assets/icon.svg" width="96">
+    <img alt="Label Blueprint" src="https://raw.githubusercontent.com/klaasnicolaas/action-label-blueprint/main/.github/assets/icon.svg" width="96">
   </picture>
 </p>
 
@@ -9,14 +9,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/klaasnicolaas/action-label-sync/actions/workflows/tests.yaml"><img src="https://github.com/klaasnicolaas/action-label-sync/actions/workflows/tests.yaml/badge.svg" alt="Tests"></a>
-  <a href="https://codecov.io/gh/klaasnicolaas/action-label-sync"><img src="https://codecov.io/gh/klaasnicolaas/action-label-sync/branch/main/graph/badge.svg" alt="Coverage"></a>
-  <a href="https://github.com/klaasnicolaas/action-label-sync/releases"><img src="https://img.shields.io/github/v/release/klaasnicolaas/action-label-sync" alt="Release"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/klaasnicolaas/action-label-sync" alt="License"></a>
+  <a href="https://github.com/klaasnicolaas/action-label-blueprint/actions/workflows/tests.yaml"><img src="https://github.com/klaasnicolaas/action-label-blueprint/actions/workflows/tests.yaml/badge.svg" alt="Tests"></a>
+  <a href="https://codecov.io/gh/klaasnicolaas/action-label-blueprint"><img src="https://codecov.io/gh/klaasnicolaas/action-label-blueprint/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/klaasnicolaas/action-label-blueprint/releases"><img src="https://img.shields.io/github/v/release/klaasnicolaas/action-label-blueprint" alt="Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/klaasnicolaas/action-label-blueprint" alt="License"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/klaasnicolaas/action-label-sync/releases/latest"><strong>Latest release</strong></a>
+  <a href="https://github.com/klaasnicolaas/action-label-blueprint/releases/latest"><strong>Latest release</strong></a>
   &middot;
   <a href="#quick-start"><strong>Usage</strong></a>
   &middot;
@@ -29,7 +29,7 @@
   Create, update and safely rename labels from one configuration, with dry-run previews, optional pruning and multi-repository support.
 </p>
 
-# Label Sync
+# Label Blueprint
 
 Manage labels in a GitHub repository from a declarative YAML or JSON file. The
 action creates missing labels, updates changed labels and can safely rename
@@ -92,7 +92,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
       - name: Synchronize labels
-        uses: klaasnicolaas/action-label-sync@v1
+        uses: klaasnicolaas/action-label-blueprint@v1
 ```
 
 `pull-requests: write` is not required: GitHub manages labels for issues and
@@ -110,7 +110,7 @@ enabled.
 Preview the exact changes without calling create, update or delete endpoints:
 
 ```yaml
-- uses: klaasnicolaas/action-label-sync@v1
+- uses: klaasnicolaas/action-label-blueprint@v1
   with:
     dry-run: true
     prune: true
@@ -125,7 +125,7 @@ alias. Pruning is intentionally disabled by default.
 Public configurations can be loaded without checking out a repository:
 
 ```yaml
-- uses: klaasnicolaas/action-label-sync@v1
+- uses: klaasnicolaas/action-label-blueprint@v1
   with:
     labels-file: https://raw.githubusercontent.com/owner/config/main/labels.yml
 ```
@@ -142,7 +142,7 @@ repository, so use a GitHub App token or fine-grained personal access token
 (PAT) with Issues write permission for every target.
 
 ```yaml
-- uses: klaasnicolaas/action-label-sync@v1
+- uses: klaasnicolaas/action-label-blueprint@v1
   with:
     github-token: ${{ secrets.LABEL_SYNC_TOKEN }}
     repositories: |

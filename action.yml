@@ -1,4 +1,4 @@
-name: "Label Sync"
+name: "Label Blueprint"
 author: "Klaas Schoute <hello@student-techlife.com>"
 description: "Synchronize GitHub labels from a declarative YAML or JSON configuration"
 
