@@ -44,6 +44,7 @@ same configuration can optionally be applied to multiple repositories.
 - **Non-Destructive by Default**: Keep unmanaged labels unless pruning is explicitly enabled.
 - **Explicit Operating Modes**: Synchronize labels, preview changes or enforce the blueprint in CI.
 - **Detailed Change Summaries**: Review grouped before-and-after values for every planned or applied change.
+- **Composable Blueprints**: Share label baselines through local or remote configurations and override only what a repository needs.
 - **Strict Validation**: Detect invalid colors, duplicate names and ambiguous aliases before repository changes start.
 - **Workflow-Friendly Results**: Review synchronization counts in the job summary and consume them through action outputs.
 - **Optional Multi-Repository Sync**: Apply the same label configuration to multiple repositories when needed.
@@ -165,9 +166,29 @@ Public configurations can be loaded without checking out a repository:
     labels-file: https://raw.githubusercontent.com/owner/config/main/labels.yml
 ```
 
-Remote files have a 15-second timeout and a 5 MiB size limit. Authentication
-headers are not sent to remote URLs; check out private configuration files
-before running the action.
+Authentication headers are not sent to remote URLs; check out private configuration files before running the action. Loading the root configuration and all imports has one shared 15-second timeout and a combined 5 MiB size limit.
+
+### Compose blueprints
+
+An object configuration can use `extends` to inherit labels from one or more local or public HTTP(S) sources:
+
+```yaml
+extends:
+  - ../shared/labels.yml
+  - https://example.com/engineering-labels.yml
+
+labels:
+  - name: bug
+    color: '5319e7'
+    aliases: []
+  - name: hardware
+    color: c5def5
+    description: Hardware-specific work
+```
+
+Sources are merged in their listed order: later sources override earlier sources, then the importing configuration overrides all of its bases. Labels are matched by name case-insensitively. Overrides are field-level, so an omitted color, description or aliases field keeps the inherited value; use `description: null` or `aliases: []` to clear one explicitly. New labels must provide a color somewhere in the import chain.
+
+Relative local imports resolve from the directory containing the importing file. Relative imports in a remote configuration resolve against its URL. Duplicate resolved sources are loaded once, and each active import chain is limited to 10 configurations including the root. Cycles and depth violations report their complete import chain. The fully merged blueprint is validated before synchronization starts.
 
 ### Multiple repositories
 
@@ -293,10 +314,7 @@ A JSON array containing synchronization counts for each repository.
 
 ## Configuration rules
 
-The root may be an array or an object with a `labels` array. Every label needs a
-unique name and six-digit hexadecimal color. Descriptions are optional and may
-contain up to 100 characters. Names and aliases may contain up to 50
-characters. Name and alias comparisons are case-insensitive.
+The root may be an array of labels or an object with optional `extends` and `labels` fields. An object may omit `labels` or use an empty array when its imports provide the labels. The fully merged configuration must contain at least one label, and every merged label needs a unique name and six-digit hexadecimal color. Descriptions are optional and may contain up to 100 characters. Names and aliases may contain up to 50 characters. Name and alias comparisons are case-insensitive.
 
 Aliases are previous names for a label. When exactly one alias exists in a
 repository, it is renamed through GitHub's update endpoint, preserving its
