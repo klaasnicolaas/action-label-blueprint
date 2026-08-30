@@ -3,8 +3,13 @@ import * as github from '@actions/github'
 import { loadLabelConfig } from './config.js'
 import { createLabelApi } from './github.js'
 import { getInputs } from './inputs.js'
+import {
+  escapeHtml,
+  MAX_DETAILED_CHANGES,
+  renderChangeTable,
+} from './summary.js'
 import { syncRepository } from './sync.js'
-import type { LabelChange, SyncResult } from './types.js'
+import type { LabelChange, RepositorySync, SyncResult } from './types.js'
 
 function describeChange(change: LabelChange): string {
   if (change.kind === 'update' && change.previousName !== change.name) {
@@ -35,7 +40,7 @@ export async function run(): Promise<void> {
     const labels = await loadLabelConfig(inputs.labelsFile)
     const api = createLabelApi(github.getOctokit(inputs.token))
     const dryRun = inputs.mode !== 'sync'
-    const results: SyncResult[] = []
+    const syncs: RepositorySync[] = []
     const failures: string[] = []
 
     core.info(
@@ -56,7 +61,7 @@ export async function run(): Promise<void> {
             prune: inputs.prune,
             dryRun,
           })
-          results.push(sync.result)
+          syncs.push(sync)
           for (const change of sync.changes) {
             core.info(describeChange(change))
           }
@@ -68,6 +73,7 @@ export async function run(): Promise<void> {
       })
     }
 
+    const results = syncs.map((sync) => sync.result)
     const created = total(results, 'created')
     const updated = total(results, 'updated')
     const deleted = total(results, 'deleted')
@@ -79,7 +85,7 @@ export async function run(): Promise<void> {
     core.setOutput('unchanged', unchanged)
     core.setOutput('summary', JSON.stringify(results))
 
-    await core.summary
+    const summary = core.summary
       .addHeading(
         inputs.mode === 'sync'
           ? 'Label Blueprint'
@@ -94,14 +100,33 @@ export async function run(): Promise<void> {
           { data: 'Unchanged', header: true },
         ],
         ...results.map((result) => [
-          result.repository,
+          escapeHtml(result.repository),
           String(result.created),
           String(result.updated),
           String(result.deleted),
           String(result.unchanged),
         ]),
       ])
-      .write()
+
+    for (const sync of syncs) {
+      const rendered = renderChangeTable(sync.changes)
+      if (rendered.total === 0) {
+        continue
+      }
+
+      const state = sync.result.dryRun ? 'planned' : 'applied'
+      summary.addDetails(
+        `${escapeHtml(sync.result.repository)} — ${formatCount(rendered.total, `${state} change`)}`,
+        rendered.html,
+      )
+      if (rendered.truncated) {
+        core.notice(
+          `Detailed summary for ${sync.result.repository} shows the first ${MAX_DETAILED_CHANGES} of ${rendered.total} changes`,
+        )
+      }
+    }
+
+    await summary.write()
 
     const problems: string[] = []
     if (failures.length > 0) {

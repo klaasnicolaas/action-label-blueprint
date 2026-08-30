@@ -13,12 +13,29 @@ export interface RepositoryLabel {
 
 export type ChangeKind = 'create' | 'update' | 'delete' | 'unchanged'
 
-export interface LabelChange {
-  kind: ChangeKind
-  name: string
-  previousName?: string
-  label?: LabelDefinition
-}
+export type LabelChange =
+  | {
+      kind: 'create'
+      name: string
+      label: LabelDefinition
+    }
+  | {
+      kind: 'update'
+      name: string
+      previousName: string
+      current: RepositoryLabel
+      label: LabelDefinition
+    }
+  | {
+      kind: 'delete'
+      name: string
+      current: RepositoryLabel
+    }
+  | {
+      kind: 'unchanged'
+      name: string
+      current: RepositoryLabel
+    }
 
 export interface SyncResult {
   repository: string
@@ -27,6 +44,11 @@ export interface SyncResult {
   deleted: number
   unchanged: number
   dryRun: boolean
+}
+
+export interface RepositorySync {
+  result: SyncResult
+  changes: LabelChange[]
 }
 
 export interface LabelApi {

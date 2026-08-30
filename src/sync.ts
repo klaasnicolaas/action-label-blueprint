@@ -3,7 +3,7 @@ import type {
   LabelChange,
   LabelDefinition,
   RepositoryLabel,
-  SyncResult,
+  RepositorySync,
 } from './types.js'
 
 const keyOf = (value: string): string => value.toLocaleLowerCase('en-US')
@@ -61,17 +61,18 @@ export function planLabelChanges(
         kind: 'update',
         name: label.name,
         previousName: matched.name,
+        current: matched,
         label,
       })
     } else {
-      changes.push({ kind: 'unchanged', name: label.name })
+      changes.push({ kind: 'unchanged', name: label.name, current: matched })
     }
   }
 
   if (prune) {
     for (const label of current) {
       if (!claimed.has(keyOf(label.name))) {
-        changes.push({ kind: 'delete', name: label.name })
+        changes.push({ kind: 'delete', name: label.name, current: label })
       }
     }
   }
@@ -84,7 +85,7 @@ export async function syncRepository(
   repository: string,
   desired: LabelDefinition[],
   options: { prune: boolean; dryRun: boolean },
-): Promise<{ result: SyncResult; changes: LabelChange[] }> {
+): Promise<RepositorySync> {
   const [owner, repo] = repository.split('/')
   if (!owner || !repo) {
     throw new Error(`Invalid repository: ${repository}`)
@@ -95,13 +96,9 @@ export async function syncRepository(
 
   if (!options.dryRun) {
     for (const change of changes) {
-      if (change.kind === 'create' && change.label) {
+      if (change.kind === 'create') {
         await api.create(owner, repo, change.label)
-      } else if (
-        change.kind === 'update' &&
-        change.label &&
-        change.previousName
-      ) {
+      } else if (change.kind === 'update') {
         await api.update(owner, repo, change.previousName, change.label)
       }
     }

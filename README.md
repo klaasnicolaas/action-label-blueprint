@@ -43,6 +43,7 @@ same configuration can optionally be applied to multiple repositories.
 - **Assignment-Safe Renames**: Rename existing labels through aliases while preserving their issue and pull request assignments.
 - **Non-Destructive by Default**: Keep unmanaged labels unless pruning is explicitly enabled.
 - **Explicit Operating Modes**: Synchronize labels, preview changes or enforce the blueprint in CI.
+- **Detailed Change Summaries**: Review grouped before-and-after values for every planned or applied change.
 - **Strict Validation**: Detect invalid colors, duplicate names and ambiguous aliases before repository changes start.
 - **Workflow-Friendly Results**: Review synchronization counts in the job summary and consume them through action outputs.
 - **Optional Multi-Repository Sync**: Apply the same label configuration to multiple repositories when needed.
@@ -133,6 +134,12 @@ repositories differ from the blueprint:
 
 The action still writes its outputs and job summary before failing, so the
 planned changes remain available for review. Check mode never modifies labels.
+
+### Review detailed changes
+
+The job summary keeps its aggregate repository table and adds a collapsed detail table for every repository with changes. Each row identifies a create, update, rename or delete and shows the relevant before-and-after label name, color and description. Unchanged fields in updates are shown as an em dash (`—`).
+
+Detail headings distinguish changes that were `planned` in `preview` and `check` modes from changes that were `applied` in `sync` mode. Values are escaped before rendering, and colors are displayed as normalized hexadecimal values. To keep large summaries manageable, detail tables show at most the first 100 changes per repository and include a truncation notice.
 
 ### Remote configuration
 
