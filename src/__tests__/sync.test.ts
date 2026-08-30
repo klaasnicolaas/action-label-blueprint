@@ -42,6 +42,7 @@ describe('planLabelChanges', () => {
         kind: 'update',
         name: 'bug',
         previousName: 'defect',
+        current: { name: 'defect', color: 'ffffff', description: null },
         label: desired[0],
       },
       { kind: 'create', name: 'documentation', label: desired[1] },

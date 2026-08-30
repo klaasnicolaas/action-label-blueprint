@@ -4,10 +4,12 @@ const mocks = vi.hoisted(() => {
   const summary = {
     addHeading: vi.fn(),
     addTable: vi.fn(),
+    addDetails: vi.fn(),
     write: vi.fn(),
   }
   summary.addHeading.mockReturnValue(summary)
   summary.addTable.mockReturnValue(summary)
+  summary.addDetails.mockReturnValue(summary)
   summary.write.mockResolvedValue(summary)
   return {
     summary,
@@ -49,6 +51,7 @@ describe('run', () => {
     vi.clearAllMocks()
     mocks.summary.addHeading.mockReturnValue(mocks.summary)
     mocks.summary.addTable.mockReturnValue(mocks.summary)
+    mocks.summary.addDetails.mockReturnValue(mocks.summary)
     mocks.summary.write.mockResolvedValue(mocks.summary)
     mocks.getInputs.mockReturnValue({
       token: 'token',
@@ -81,11 +84,31 @@ describe('run', () => {
           dryRun: true,
         },
         changes: [
-          { kind: 'create', name: 'bug' },
+          {
+            kind: 'create',
+            name: 'bug',
+            label: {
+              name: 'bug',
+              color: 'd73a4a',
+              description: null,
+              aliases: [],
+            },
+          },
           {
             kind: 'update',
             name: 'docs',
             previousName: 'documentation',
+            current: {
+              name: 'documentation',
+              color: 'ffffff',
+              description: 'Old docs',
+            },
+            label: {
+              name: 'docs',
+              color: '0075ca',
+              description: 'New docs',
+              aliases: ['documentation'],
+            },
           },
         ],
       })
@@ -98,7 +121,13 @@ describe('run', () => {
           unchanged: 1,
           dryRun: true,
         },
-        changes: [{ kind: 'unchanged', name: 'bug' }],
+        changes: [
+          {
+            kind: 'unchanged',
+            name: 'bug',
+            current: { name: 'bug', color: 'd73a4a', description: null },
+          },
+        ],
       })
 
     await run()
@@ -112,6 +141,11 @@ describe('run', () => {
     expect(mocks.setOutput).toHaveBeenCalledWith('updated', 1)
     expect(mocks.setOutput).toHaveBeenCalledWith('deleted', 0)
     expect(mocks.setOutput).toHaveBeenCalledWith('unchanged', 1)
+    expect(mocks.summary.addDetails).toHaveBeenCalledTimes(1)
+    expect(mocks.summary.addDetails).toHaveBeenCalledWith(
+      'owner/one — 2 planned changes',
+      expect.stringContaining('<td>Rename</td>'),
+    )
     expect(mocks.setFailed).not.toHaveBeenCalled()
   })
 
@@ -132,7 +166,18 @@ describe('run', () => {
         unchanged: 0,
         dryRun: false,
       },
-      changes: [{ kind: 'create', name: 'bug' }],
+      changes: [
+        {
+          kind: 'create',
+          name: 'bug',
+          label: {
+            name: 'bug',
+            color: 'd73a4a',
+            description: null,
+            aliases: [],
+          },
+        },
+      ],
     })
 
     await run()
@@ -144,6 +189,10 @@ describe('run', () => {
       { prune: false, dryRun: false },
     )
     expect(mocks.summary.addHeading).toHaveBeenCalledWith('Label Blueprint')
+    expect(mocks.summary.addDetails).toHaveBeenCalledWith(
+      'owner/one — 1 applied change',
+      expect.stringContaining('<td>Create</td>'),
+    )
     expect(mocks.notice).not.toHaveBeenCalled()
     expect(mocks.setFailed).not.toHaveBeenCalled()
   })
@@ -160,7 +209,34 @@ describe('run', () => {
           unchanged: 1,
           dryRun: true,
         },
-        changes: [],
+        changes: [
+          {
+            kind: 'create',
+            name: 'bug',
+            label: {
+              name: 'bug',
+              color: 'd73a4a',
+              description: null,
+              aliases: [],
+            },
+          },
+          {
+            kind: 'update',
+            name: 'docs',
+            previousName: 'docs',
+            current: {
+              name: 'docs',
+              color: 'ffffff',
+              description: null,
+            },
+            label: {
+              name: 'docs',
+              color: '0075ca',
+              description: null,
+              aliases: [],
+            },
+          },
+        ],
       })
 
     await run()
@@ -190,7 +266,17 @@ describe('run', () => {
           unchanged: 0,
           dryRun: true,
         },
-        changes: [],
+        changes: [
+          {
+            kind: 'delete',
+            name: 'stale',
+            current: {
+              name: 'stale',
+              color: '000000',
+              description: null,
+            },
+          },
+        ],
       })
       .mockResolvedValueOnce({
         result: {
@@ -245,13 +331,66 @@ describe('run', () => {
           unchanged: 1,
           dryRun: true,
         },
-        changes: [{ kind: 'unchanged', name: 'bug' }],
+        changes: [
+          {
+            kind: 'unchanged',
+            name: 'bug',
+            current: { name: 'bug', color: 'd73a4a', description: null },
+          },
+        ],
       }),
     )
 
     await run()
 
+    expect(mocks.summary.addDetails).not.toHaveBeenCalled()
     expect(mocks.setFailed).not.toHaveBeenCalled()
+  })
+
+  it('truncates large repository details with a visible notice', async () => {
+    const changes = Array.from({ length: 101 }, (_, index) => ({
+      kind: 'create' as const,
+      name: `label-${index}`,
+      label: {
+        name: `label-${index}`,
+        color: 'ffffff',
+        description: null,
+        aliases: [],
+      },
+    }))
+    mocks.syncRepository
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/one',
+          created: 101,
+          updated: 0,
+          deleted: 0,
+          unchanged: 0,
+          dryRun: true,
+        },
+        changes,
+      })
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/two',
+          created: 0,
+          updated: 0,
+          deleted: 0,
+          unchanged: 1,
+          dryRun: true,
+        },
+        changes: [],
+      })
+
+    await run()
+
+    expect(mocks.summary.addDetails).toHaveBeenCalledWith(
+      'owner/one — 101 planned changes',
+      expect.stringContaining('Showing the first 100 of 101 changes.'),
+    )
+    expect(mocks.notice).toHaveBeenCalledWith(
+      'Detailed summary for owner/one shows the first 100 of 101 changes',
+    )
   })
 
   it('reports repository failures together with detected drift', async () => {
@@ -273,7 +412,18 @@ describe('run', () => {
           unchanged: 0,
           dryRun: true,
         },
-        changes: [{ kind: 'create', name: 'bug' }],
+        changes: [
+          {
+            kind: 'create',
+            name: 'bug',
+            label: {
+              name: 'bug',
+              color: 'd73a4a',
+              description: null,
+              aliases: [],
+            },
+          },
+        ],
       })
 
     await run()
