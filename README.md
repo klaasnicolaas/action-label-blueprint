@@ -270,6 +270,51 @@ A JSON array containing synchronization counts for each repository.
 ]
 ```
 
+### `plan`
+
+A versioned JSON object containing the complete synchronization plan for every successfully processed repository. Every label is included, including labels with the `unchanged` operation.
+
+Each change has an explicit `create`, `update`, `rename`, `delete` or `unchanged` operation. `current` is `null` for creates and `desired` is `null` for deletes. Colors are normalized to lowercase six-digit hexadecimal values without a leading `#`; aliases are configuration metadata and are not part of the resulting label state.
+
+```json
+{
+  "version": 1,
+  "repositories": [
+    {
+      "repository": "owner/repository",
+      "changes": [
+        {
+          "operation": "create",
+          "current": null,
+          "desired": {
+            "name": "documentation",
+            "color": "0075ca",
+            "description": null
+          }
+        },
+        {
+          "operation": "rename",
+          "current": {
+            "name": "defect",
+            "color": "ffffff",
+            "description": null
+          },
+          "desired": {
+            "name": "bug",
+            "color": "d73a4a",
+            "description": "Something is not working."
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+The schema and content are identical in `sync`, `preview` and `check` modes. Repositories and changes are sorted case-insensitively, with a case-sensitive tie-breaker, so equivalent plans produce deterministic JSON.
+
+[GitHub limits job outputs to 1 MB and estimates their size using UTF-16 encoding](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idoutputs). Label Blueprint reserves space for its other outputs and emits `plan` up to an estimated 900 KiB. If the plan exceeds that limit, `plan` is set to an empty string and the action logs a warning; synchronization results and the job summary remain available.
+
 ## Configuration rules
 
 The root may be an array or an object with a `labels` array. Every label needs a

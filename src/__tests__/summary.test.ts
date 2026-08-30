@@ -66,6 +66,12 @@ const changes: LabelChange[] = [
       color: 'ffffff',
       description: null,
     },
+    label: {
+      name: 'keep',
+      color: 'ffffff',
+      description: null,
+      aliases: [],
+    },
   },
 ]
 

@@ -3,6 +3,7 @@ import * as github from '@actions/github'
 import { loadLabelConfig } from './config.js'
 import { createLabelApi } from './github.js'
 import { getInputs } from './inputs.js'
+import { createPlanOutput } from './plan.js'
 import {
   escapeHtml,
   MAX_DETAILED_CHANGES,
@@ -84,6 +85,15 @@ export async function run(): Promise<void> {
     core.setOutput('deleted', deleted)
     core.setOutput('unchanged', unchanged)
     core.setOutput('summary', JSON.stringify(results))
+    const planOutput = createPlanOutput(syncs)
+    if (planOutput.exceedsLimit) {
+      core.warning(
+        `Synchronization plan output is approximately ${Math.ceil(planOutput.estimatedBytes / 1024)} KiB and exceeds the safe ${Math.floor(planOutput.maxBytes / 1024)} KiB limit; the plan output was omitted`,
+      )
+      core.setOutput('plan', '')
+    } else {
+      core.setOutput('plan', planOutput.json)
+    }
 
     const summary = core.summary
       .addHeading(

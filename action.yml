@@ -45,6 +45,8 @@ outputs:
     description: "Number of labels that already matched the configuration."
   summary:
     description: "JSON array with synchronization counts for each repository."
+  plan:
+    description: "Versioned JSON synchronization plan with current and desired label values."
 
 runs:
   using: "node24"

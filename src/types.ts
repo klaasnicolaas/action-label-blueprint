@@ -35,6 +35,7 @@ export type LabelChange =
       kind: 'unchanged'
       name: string
       current: RepositoryLabel
+      label: LabelDefinition
     }
 
 export interface SyncResult {

@@ -65,7 +65,12 @@ export function planLabelChanges(
         label,
       })
     } else {
-      changes.push({ kind: 'unchanged', name: label.name, current: matched })
+      changes.push({
+        kind: 'unchanged',
+        name: label.name,
+        current: matched,
+        label,
+      })
     }
   }
 

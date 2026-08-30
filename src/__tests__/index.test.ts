@@ -15,6 +15,7 @@ const mocks = vi.hoisted(() => {
     summary,
     info: vi.fn(),
     notice: vi.fn(),
+    warning: vi.fn(),
     error: vi.fn(),
     setOutput: vi.fn(),
     setFailed: vi.fn(),
@@ -33,6 +34,7 @@ vi.mock('@actions/core', () => ({
   summary: mocks.summary,
   info: mocks.info,
   notice: mocks.notice,
+  warning: mocks.warning,
   error: mocks.error,
   setOutput: mocks.setOutput,
   setFailed: mocks.setFailed,
@@ -126,6 +128,12 @@ describe('run', () => {
             kind: 'unchanged',
             name: 'bug',
             current: { name: 'bug', color: 'd73a4a', description: null },
+            label: {
+              name: 'bug',
+              color: 'd73a4a',
+              description: null,
+              aliases: [],
+            },
           },
         ],
       })
@@ -141,6 +149,10 @@ describe('run', () => {
     expect(mocks.setOutput).toHaveBeenCalledWith('updated', 1)
     expect(mocks.setOutput).toHaveBeenCalledWith('deleted', 0)
     expect(mocks.setOutput).toHaveBeenCalledWith('unchanged', 1)
+    expect(mocks.setOutput).toHaveBeenCalledWith(
+      'plan',
+      expect.stringContaining('"version":1'),
+    )
     expect(mocks.summary.addDetails).toHaveBeenCalledTimes(1)
     expect(mocks.summary.addDetails).toHaveBeenCalledWith(
       'owner/one — 2 planned changes',
@@ -336,6 +348,12 @@ describe('run', () => {
             kind: 'unchanged',
             name: 'bug',
             current: { name: 'bug', color: 'd73a4a', description: null },
+            label: {
+              name: 'bug',
+              color: 'd73a4a',
+              description: null,
+              aliases: [],
+            },
           },
         ],
       }),
@@ -390,6 +408,46 @@ describe('run', () => {
     )
     expect(mocks.notice).toHaveBeenCalledWith(
       'Detailed summary for owner/one shows the first 100 of 101 changes',
+    )
+  })
+
+  it('omits a plan output that exceeds the safe job-output budget', async () => {
+    const changes = Array.from({ length: 6000 }, (_, index) => ({
+      kind: 'create' as const,
+      name: `label-${index.toString().padStart(4, '0')}`,
+      label: {
+        name: `label-${index.toString().padStart(4, '0')}`,
+        color: 'ffffff',
+        description: 'A label description that contributes to the output size',
+        aliases: [],
+      },
+    }))
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one'],
+      prune: false,
+      mode: 'preview',
+    })
+    mocks.syncRepository.mockResolvedValue({
+      result: {
+        repository: 'owner/one',
+        created: changes.length,
+        updated: 0,
+        deleted: 0,
+        unchanged: 0,
+        dryRun: true,
+      },
+      changes,
+    })
+
+    await run()
+
+    expect(mocks.setOutput).toHaveBeenCalledWith('plan', '')
+    expect(mocks.warning).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /Synchronization plan output is approximately \d+ KiB and exceeds the safe 900 KiB limit; the plan output was omitted/,
+      ),
     )
   })
 
