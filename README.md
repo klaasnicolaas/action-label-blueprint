@@ -1,33 +1,57 @@
-## 🏷️ Label Sync
+<p align="center">
+  <picture>
+    <img alt="Label Sync" src="https://raw.githubusercontent.com/klaasnicolaas/action-label-sync/main/.github/assets/icon.svg" width="96">
+  </picture>
+</p>
 
-[![GitHub Release][releases-shield]][releases]
-![Project Stage][project-stage-shield]
-![Project Maintenance][maintenance-shield]
-[![License][license-shield]](LICENSE)
+<p align="center">
+  <strong>Manage GitHub repository labels from a declarative YAML or JSON configuration.</strong>
+</p>
 
-[![Test Status][test-shield]][test-url]
-[![Code Coverage][codecov-shield]][codecov-url]
+<p align="center">
+  <a href="https://github.com/klaasnicolaas/action-label-sync/actions/workflows/tests.yaml"><img src="https://github.com/klaasnicolaas/action-label-sync/actions/workflows/tests.yaml/badge.svg" alt="Tests"></a>
+  <a href="https://codecov.io/gh/klaasnicolaas/action-label-sync"><img src="https://codecov.io/gh/klaasnicolaas/action-label-sync/branch/main/graph/badge.svg" alt="Coverage"></a>
+  <a href="https://github.com/klaasnicolaas/action-label-sync/releases"><img src="https://img.shields.io/github/v/release/klaasnicolaas/action-label-sync" alt="Release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/klaasnicolaas/action-label-sync" alt="License"></a>
+</p>
 
+<p align="center">
+  <a href="https://github.com/klaasnicolaas/action-label-sync/releases/latest"><strong>Latest release</strong></a>
+  &middot;
+  <a href="#quick-start"><strong>Usage</strong></a>
+  &middot;
+  <a href="#configuration-rules"><strong>Configuration</strong></a>
+  &middot;
+  <a href="CONTRIBUTING.md"><strong>Contributing</strong></a>
+</p>
 
-Synchronize labels in one or more GitHub repositories from a declarative YAML
-or JSON file. The action creates missing labels, updates changed labels and can
-safely rename labels through aliases without removing them from issues and pull
-requests.
+<p align="center">
+  Create, update and safely rename labels from one configuration, with dry-run previews, optional pruning and multi-repository support.
+</p>
 
-### Features
+# Label Sync
 
-- **Declarative Configuration**: Manage labels from a version-controlled YAML or JSON file, loaded locally or from a remote URL.
-- **Multi-Repository Sync**: Apply one consistent label configuration to one or multiple repositories.
+Manage labels in a GitHub repository from a declarative YAML or JSON file. The
+action creates missing labels, updates changed labels and can safely rename
+labels through aliases without removing them from issues and pull requests. The
+same configuration can optionally be applied to multiple repositories.
+
+## Features
+
+- **Declarative Label Management**: Define the desired label state in a version-controlled YAML or JSON file.
+- **Automatic Reconciliation**: Create missing labels and update names, colors and descriptions that have changed.
 - **Assignment-Safe Renames**: Rename existing labels through aliases while preserving their issue and pull request assignments.
 - **Non-Destructive by Default**: Keep unmanaged labels unless pruning is explicitly enabled.
 - **Dry-Run Preview**: Review planned creates, updates, renames and deletions in the job summary before applying them.
 - **Strict Validation**: Detect invalid colors, duplicate names and ambiguous aliases before repository changes start.
-- **Actionable Results**: Expose synchronization counts as workflow outputs and aggregate failures across multiple repositories.
+- **Workflow-Friendly Results**: Review synchronization counts in the job summary and consume them through action outputs.
+- **Optional Multi-Repository Sync**: Apply the same label configuration to multiple repositories when needed.
 
-## Example workflow
+## Quick start
 
-This example synchronizes labels in the current repository whenever its label
-configuration changes.
+By default, the action manages labels in the repository where the workflow
+runs. This example reapplies the desired label state whenever its configuration
+changes.
 
 Create `.github/labels.yml`:
 
@@ -74,21 +98,12 @@ jobs:
 `pull-requests: write` is not required: GitHub manages labels for issues and
 pull requests through the Issues labels API.
 
-### Multiple repositories
+The configuration is the desired state. Labels that do not exist are created,
+changed labels are updated and aliases are renamed without losing their issue
+or pull request assignments. Other labels remain untouched unless `prune` is
+enabled.
 
-The default workflow token normally only has access to its own repository. Use
-a GitHub App token or fine-grained personal access token (PAT) with Issues write
-permission for every cross-repository target.
-
-```yaml
-- uses: klaasnicolaas/action-label-sync@v1
-  with:
-    github-token: ${{ secrets.LABEL_SYNC_TOKEN }}
-    repositories: |
-      owner/first-repository
-      owner/second-repository
-    labels-file: .github/labels.yml
-```
+## Advanced usage
 
 ### Preview and prune
 
@@ -119,6 +134,23 @@ Remote files have a 15-second timeout and a 5 MiB size limit. Authentication
 headers are not sent to remote URLs; check out private configuration files
 before running the action.
 
+### Multiple repositories
+
+Set `repositories` to optionally apply the same configuration to more than one
+repository. The default workflow token normally only has access to its own
+repository, so use a GitHub App token or fine-grained personal access token
+(PAT) with Issues write permission for every target.
+
+```yaml
+- uses: klaasnicolaas/action-label-sync@v1
+  with:
+    github-token: ${{ secrets.LABEL_SYNC_TOKEN }}
+    repositories: |
+      owner/first-repository
+      owner/second-repository
+    labels-file: .github/labels.yml
+```
+
 ## Inputs
 
 The following input parameters can be used to configure the action.
@@ -127,8 +159,8 @@ _If no input parameters are provided, the action will use the default values._
 
 ### `github-token`
 
-The token used to manage labels through the GitHub API. It needs Issues write
-permission for every target repository.
+The token used to manage labels through the GitHub API. For multi-repository
+sync, it needs Issues write permission for every target repository.
 
 - Default: `${{ github.token }}`
 - Usage: **Optional**
@@ -143,7 +175,7 @@ The local path or HTTP(S) URL to a YAML or JSON label configuration.
 ### `repositories`
 
 A comma- or newline-separated list of repositories in `owner/repository`
-format.
+format. Leave this unset to manage the repository running the workflow.
 
 - Default: _Current repository_
 - Usage: **Optional**
@@ -231,14 +263,3 @@ Thank you for being involved! :heart_eyes:
 
 Distributed under the **Apache License 2.0** license. See [`LICENSE`](LICENSE) for more information.
 
-<!-- LINKS -->
-
-[codecov-shield]: https://codecov.io/gh/klaasnicolaas/action-label-sync/branch/main/graph/badge.svg?token=
-[codecov-url]: https://codecov.io/gh/klaasnicolaas/action-label-sync
-[license-shield]: https://img.shields.io/github/license/klaasnicolaas/action-label-sync.svg
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2026.svg
-[project-stage-shield]: https://img.shields.io/badge/project%20stage-production%20ready-brightgreen.svg
-[releases-shield]: https://img.shields.io/github/release/klaasnicolaas/action-label-sync.svg
-[releases]: https://github.com/klaasnicolaas/action-label-sync/releases
-[test-shield]: https://github.com/klaasnicolaas/action-label-sync/actions/workflows/tests.yaml/badge.svg
-[test-url]: https://github.com/klaasnicolaas/action-label-sync/actions/workflows/tests.yaml
