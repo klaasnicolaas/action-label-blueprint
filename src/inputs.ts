@@ -7,6 +7,7 @@ export interface ActionInputs {
   labelsFile: string
   repositories: string[]
   prune: boolean
+  pruneIgnore: string[]
   mode: ActionMode
 }
 
@@ -45,6 +46,17 @@ export function parseRepositories(
   return [...repositories.values()]
 }
 
+export function parsePruneIgnore(value: string): string[] {
+  const patterns = new Map<string, string>()
+  for (const pattern of value
+    .split(/[\n,]+/)
+    .map((candidate) => candidate.trim())
+    .filter(Boolean)) {
+    patterns.set(pattern.toLocaleLowerCase('en-US'), pattern)
+  }
+  return [...patterns.values()]
+}
+
 export function getInputs(defaultRepository: string): ActionInputs {
   const legacyDryRun = core.getBooleanInput('dry-run')
   return {
@@ -55,6 +67,7 @@ export function getInputs(defaultRepository: string): ActionInputs {
       defaultRepository,
     ),
     prune: core.getBooleanInput('prune'),
+    pruneIgnore: parsePruneIgnore(core.getInput('prune-ignore')),
     mode: parseMode(core.getInput('mode'), legacyDryRun),
   }
 }

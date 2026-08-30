@@ -49,6 +49,7 @@ export interface SyncResult {
 export interface RepositorySync {
   result: SyncResult
   changes: LabelChange[]
+  ignored: RepositoryLabel[]
 }
 
 export interface LabelApi {

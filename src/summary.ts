@@ -24,6 +24,10 @@ export function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;')
 }
 
+export function renderIgnoredLabels(names: string[]): string {
+  return `<ul>${names.map((value) => `<li>${name(value)}</li>`).join('')}</ul>`
+}
+
 function code(value: string): string {
   return `<code>${escapeHtml(value)}</code>`
 }

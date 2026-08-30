@@ -8,6 +8,33 @@ import type {
 
 const keyOf = (value: string): string => value.toLocaleLowerCase('en-US')
 
+function globPattern(pattern: string): RegExp {
+  let source = '^'
+  for (const character of pattern) {
+    if (character === '*') {
+      source += '.*'
+    } else if (character === '?') {
+      source += '.'
+    } else {
+      source += character.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')
+    }
+  }
+  return new RegExp(`${source}$`, 'iu')
+}
+
+export function createPruneIgnoreMatcher(
+  patterns: string[],
+): (labelName: string) => boolean {
+  const compiled = patterns.map(globPattern)
+  return (labelName) =>
+    compiled.some((pattern) => pattern.test(labelName))
+}
+
+export interface LabelPlan {
+  changes: LabelChange[]
+  ignored: RepositoryLabel[]
+}
+
 function hasMetadataChanged(
   current: RepositoryLabel,
   desired: LabelDefinition,
@@ -23,12 +50,15 @@ export function planLabelChanges(
   current: RepositoryLabel[],
   desired: LabelDefinition[],
   prune: boolean,
-): LabelChange[] {
+  pruneIgnore: string[] = [],
+): LabelPlan {
   const currentByName = new Map(
     current.map((label) => [keyOf(label.name), label]),
   )
   const claimed = new Set<string>()
   const changes: LabelChange[] = []
+  const ignored: RepositoryLabel[] = []
+  const isIgnored = createPruneIgnoreMatcher(pruneIgnore)
 
   for (const label of desired) {
     const exact = currentByName.get(keyOf(label.name))
@@ -72,19 +102,27 @@ export function planLabelChanges(
   if (prune) {
     for (const label of current) {
       if (!claimed.has(keyOf(label.name))) {
-        changes.push({ kind: 'delete', name: label.name, current: label })
+        if (isIgnored(label.name)) {
+          ignored.push(label)
+        } else {
+          changes.push({ kind: 'delete', name: label.name, current: label })
+        }
       }
     }
   }
 
-  return changes
+  return { changes, ignored }
 }
 
 export async function syncRepository(
   api: LabelApi,
   repository: string,
   desired: LabelDefinition[],
-  options: { prune: boolean; dryRun: boolean },
+  options: {
+    prune: boolean
+    pruneIgnore?: string[]
+    dryRun: boolean
+  },
 ): Promise<RepositorySync> {
   const [owner, repo] = repository.split('/')
   if (!owner || !repo) {
@@ -92,8 +130,12 @@ export async function syncRepository(
   }
 
   const current = await api.list(owner, repo)
-  const changes = planLabelChanges(current, desired, options.prune)
-
+  const { changes, ignored } = planLabelChanges(
+    current,
+    desired,
+    options.prune,
+    options.pruneIgnore,
+  )
   if (!options.dryRun) {
     for (const change of changes) {
       if (change.kind === 'create') {
@@ -114,6 +156,7 @@ export async function syncRepository(
 
   return {
     changes,
+    ignored,
     result: {
       repository,
       created: count('create'),
