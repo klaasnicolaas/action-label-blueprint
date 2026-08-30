@@ -1,0 +1,69 @@
+---
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+change-template: "- [#$NUMBER]($URL) $TITLE @$AUTHOR"
+change-title-escapes: '\<*_&`'
+sort-direction: ascending
+
+categories:
+  - title: "🚨 Breaking changes"
+    exclusive: true
+    semver-increment: major
+    when:
+      label: "breaking-change"
+  - title: "🔒 Security"
+    exclusive: true
+    when:
+      label: "security"
+  - title: "✨ New features"
+    exclusive: true
+    semver-increment: minor
+    when:
+      label: "new-feature"
+  - title: "🐛 Bug fixes"
+    exclusive: true
+    when:
+      label: "bugfix"
+  - title: "🚀 Enhancements"
+    exclusive: true
+    when:
+      labels:
+        - "enhancement"
+        - "refactor"
+        - "performance"
+  - title: "📚 Documentation"
+    exclusive: true
+    when:
+      label: "documentation"
+  - title: "🧰 Maintenance"
+    exclusive: true
+    when:
+      labels:
+        - "maintenance"
+        - "ci"
+  - title: "⬆️ Dependency updates"
+    collapse-after: 5
+    exclusive: true
+    when:
+      label: "dependencies"
+  - type: version-resolver
+    semver-increment: major
+    when:
+      label: "major"
+  - type: version-resolver
+    semver-increment: minor
+    when:
+      label: "minor"
+  - type: version-resolver
+    semver-increment: patch
+  - type: pre-exclude
+    when:
+      label: "sync"
+
+# yamllint disable rule:line-length
+template: |
+  ## What's changed
+
+  $CHANGES
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

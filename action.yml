@@ -1,0 +1,47 @@
+name: "Label Sync"
+author: "Klaas Schoute <hello@student-techlife.com>"
+description: "Synchronize GitHub labels from a declarative YAML or JSON configuration"
+
+branding:
+  icon: "tag"
+  color: "blue"
+
+inputs:
+  github-token:
+    description: "Token with Issues write permission for every target repository."
+    required: false
+    default: ${{ github.token }}
+  labels-file:
+    description: "Local path or HTTP(S) URL to a YAML or JSON label configuration."
+    required: false
+    default: ".github/labels.yml"
+  repositories:
+    description: "Comma- or newline-separated owner/repository targets. Defaults to the current repository."
+    required: false
+    default: ""
+  prune:
+    description: "Delete labels that are not present in the configuration."
+    required: false
+    default: "false"
+  dry-run:
+    description: "Plan and report changes without modifying labels."
+    required: false
+    default: "false"
+
+outputs:
+  repositories:
+    description: "Number of successfully synchronized repositories."
+  created:
+    description: "Number of labels created across all repositories."
+  updated:
+    description: "Number of labels updated or renamed across all repositories."
+  deleted:
+    description: "Number of labels deleted across all repositories."
+  unchanged:
+    description: "Number of labels that already matched the configuration."
+  summary:
+    description: "JSON array with synchronization counts for each repository."
+
+runs:
+  using: "node24"
+  main: "dist/index.cjs"

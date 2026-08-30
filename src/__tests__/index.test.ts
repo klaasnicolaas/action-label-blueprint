@@ -1,0 +1,151 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const mocks = vi.hoisted(() => {
+  const summary = {
+    addHeading: vi.fn(),
+    addTable: vi.fn(),
+    write: vi.fn(),
+  }
+  summary.addHeading.mockReturnValue(summary)
+  summary.addTable.mockReturnValue(summary)
+  summary.write.mockResolvedValue(summary)
+  return {
+    summary,
+    info: vi.fn(),
+    notice: vi.fn(),
+    error: vi.fn(),
+    setOutput: vi.fn(),
+    setFailed: vi.fn(),
+    group: vi.fn(async (_name: string, callback: () => Promise<void>) =>
+      callback(),
+    ),
+    getOctokit: vi.fn(),
+    loadLabelConfig: vi.fn(),
+    getInputs: vi.fn(),
+    createLabelApi: vi.fn(),
+    syncRepository: vi.fn(),
+  }
+})
+
+vi.mock('@actions/core', () => ({
+  summary: mocks.summary,
+  info: mocks.info,
+  notice: mocks.notice,
+  error: mocks.error,
+  setOutput: mocks.setOutput,
+  setFailed: mocks.setFailed,
+  group: mocks.group,
+}))
+vi.mock('@actions/github', () => ({ getOctokit: mocks.getOctokit }))
+vi.mock('../config.js', () => ({ loadLabelConfig: mocks.loadLabelConfig }))
+vi.mock('../inputs.js', () => ({ getInputs: mocks.getInputs }))
+vi.mock('../github.js', () => ({ createLabelApi: mocks.createLabelApi }))
+vi.mock('../sync.js', () => ({ syncRepository: mocks.syncRepository }))
+
+import { run } from '../index.js'
+
+describe('run', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mocks.summary.addHeading.mockReturnValue(mocks.summary)
+    mocks.summary.addTable.mockReturnValue(mocks.summary)
+    mocks.summary.write.mockResolvedValue(mocks.summary)
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one', 'owner/two'],
+      prune: false,
+      dryRun: true,
+    })
+    mocks.loadLabelConfig.mockResolvedValue([
+      {
+        name: 'bug',
+        color: 'd73a4a',
+        description: null,
+        aliases: [],
+      },
+    ])
+    mocks.getOctokit.mockReturnValue({})
+    mocks.createLabelApi.mockReturnValue({})
+  })
+
+  it('reports aggregated results and change details', async () => {
+    mocks.syncRepository
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/one',
+          created: 1,
+          updated: 1,
+          deleted: 0,
+          unchanged: 0,
+          dryRun: true,
+        },
+        changes: [
+          { kind: 'create', name: 'bug' },
+          {
+            kind: 'update',
+            name: 'docs',
+            previousName: 'documentation',
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/two',
+          created: 0,
+          updated: 0,
+          deleted: 0,
+          unchanged: 1,
+          dryRun: true,
+        },
+        changes: [{ kind: 'unchanged', name: 'bug' }],
+      })
+
+    await run()
+
+    expect(mocks.notice).toHaveBeenCalledWith(
+      'Dry-run enabled: no labels will be modified',
+    )
+    expect(mocks.info).toHaveBeenCalledWith('update documentation → docs')
+    expect(mocks.setOutput).toHaveBeenCalledWith('repositories', 2)
+    expect(mocks.setOutput).toHaveBeenCalledWith('created', 1)
+    expect(mocks.setOutput).toHaveBeenCalledWith('updated', 1)
+    expect(mocks.setOutput).toHaveBeenCalledWith('deleted', 0)
+    expect(mocks.setOutput).toHaveBeenCalledWith('unchanged', 1)
+    expect(mocks.setFailed).not.toHaveBeenCalled()
+  })
+
+  it('continues after a repository failure and fails at the end', async () => {
+    mocks.syncRepository
+      .mockRejectedValueOnce(new Error('Forbidden'))
+      .mockResolvedValueOnce({
+        result: {
+          repository: 'owner/two',
+          created: 0,
+          updated: 0,
+          deleted: 0,
+          unchanged: 1,
+          dryRun: true,
+        },
+        changes: [],
+      })
+
+    await run()
+
+    expect(mocks.syncRepository).toHaveBeenCalledTimes(2)
+    expect(mocks.error).toHaveBeenCalledWith('owner/one: Forbidden')
+    expect(mocks.setFailed).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Failed to synchronize 1 repository/repositories',
+      ),
+    )
+  })
+
+  it('fails cleanly when setup fails', async () => {
+    mocks.loadLabelConfig.mockRejectedValue(new Error('Invalid configuration'))
+
+    await run()
+
+    expect(mocks.setFailed).toHaveBeenCalledWith('Invalid configuration')
+  })
+})

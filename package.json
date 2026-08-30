@@ -1,0 +1,51 @@
+{
+  "name": "action-label-sync",
+  "description": "Synchronize GitHub labels from a declarative configuration",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "author": "Klaas Schoute <hello@student-techlife.com>",
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --platform=node --outfile=dist/index.cjs --format=cjs",
+    "format:check": "prettier --check src/**/*.ts",
+    "format:fix": "prettier --write src/**/*.ts",
+    "typing:check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/klaasnicolaas/action-label-sync.git"
+  },
+  "bugs": {
+    "url": "https://github.com/klaasnicolaas/action-label-sync/issues"
+  },
+  "homepage": "https://github.com/klaasnicolaas/action-label-sync#readme",
+  "keywords": [
+    "actions",
+    "github",
+    "labels",
+    "sync"
+  ],
+  "dependencies": {
+    "@actions/core": "^3.0.0",
+    "@actions/github": "^9.0.0",
+    "js-yaml": "^4.1.1"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^26.0.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "esbuild": "^0.28.0",
+    "husky": "^9.0.11",
+    "prettier": "^3.3.2",
+    "typescript": "^7.0.0",
+    "vitest": "^4.0.18"
+  }
+}
