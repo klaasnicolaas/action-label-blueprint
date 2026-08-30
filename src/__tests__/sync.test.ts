@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { planLabelChanges, syncRepository } from '../sync.js'
+import {
+  matchesPruneIgnore,
+  planLabelChanges,
+  syncRepository,
+} from '../sync.js'
 import type { LabelApi, LabelDefinition, RepositoryLabel } from '../types.js'
 
 const desired: LabelDefinition[] = [
@@ -36,7 +40,7 @@ describe('planLabelChanges', () => {
         ],
         desired,
         false,
-      ),
+      ).changes,
     ).toEqual([
       {
         kind: 'update',
@@ -50,7 +54,7 @@ describe('planLabelChanges', () => {
   })
 
   it('plans deletes only when prune is enabled', () => {
-    const changes = planLabelChanges(
+    const { changes } = planLabelChanges(
       [
         {
           name: 'bug',
@@ -80,6 +84,41 @@ describe('planLabelChanges', () => {
         false,
       ),
     ).toThrow('Multiple aliases exist')
+  })
+
+  it('protects exact names and glob matches from pruning', () => {
+    const { changes, ignored } = planLabelChanges(
+      [
+        { name: 'Dependencies', color: 'ffffff', description: null },
+        { name: 'Release:Stable', color: 'ffffff', description: null },
+        { name: 'bot-1', color: 'ffffff', description: null },
+        { name: 'obsolete', color: 'ffffff', description: null },
+      ],
+      [],
+      true,
+      ['dependencies', 'release:*', 'bot-?'],
+    )
+
+    expect(ignored.map((label) => label.name)).toEqual([
+      'Dependencies',
+      'Release:Stable',
+      'bot-1',
+    ])
+    expect(changes.map((change) => change.name)).toEqual(['obsolete'])
+  })
+})
+
+describe('matchesPruneIgnore', () => {
+  it('matches exact names, * and ? case-insensitively', () => {
+    expect(matchesPruneIgnore('GitHub-Actions', ['github-actions'])).toBe(true)
+    expect(matchesPruneIgnore('Release:Stable', ['release:*'])).toBe(true)
+    expect(matchesPruneIgnore('bot-1', ['BOT-?'])).toBe(true)
+    expect(matchesPruneIgnore('bot-12', ['bot-?'])).toBe(false)
+  })
+
+  it('treats other regular-expression characters literally', () => {
+    expect(matchesPruneIgnore('app[bot]', ['app[bot]'])).toBe(true)
+    expect(matchesPruneIgnore('appb', ['app[bot]'])).toBe(false)
   })
 })
 

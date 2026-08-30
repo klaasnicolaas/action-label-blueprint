@@ -121,6 +121,20 @@ After reviewing the job summary, switch `mode` back to `sync`. Enabling
 `prune` deletes all repository labels that are not represented by a configured
 label or a matched alias. Pruning is intentionally disabled by default.
 
+Labels managed by another app or automation can be protected with `prune-ignore`:
+
+```yaml
+- uses: klaasnicolaas/action-label-blueprint@v1
+  with:
+    prune: true
+    prune-ignore: |
+      dependencies
+      github-actions
+      release:*
+```
+
+Patterns match the complete label name case-insensitively. `*` matches any number of characters and `?` matches one character; all other characters are treated literally. Exact names and patterns may be separated by commas or newlines. Protected labels are shown in the action log and job summary and are never deleted by pruning.
+
 ### Enforce the blueprint in CI
 
 Use `check` mode to create a read-only CI check that fails when one or more
@@ -207,6 +221,13 @@ Delete labels that are absent from the configuration. This can be destructive,
 so pruning is disabled by default.
 
 - Default: `false`
+- Usage: **Optional**
+
+### `prune-ignore`
+
+A comma- or newline-separated list of exact label names and glob patterns that pruning must preserve. Matching is case-insensitive; `*` matches any number of characters and `?` matches exactly one character. This input only has an effect when `prune` is enabled.
+
+- Default: _Empty_
 - Usage: **Optional**
 
 ### `mode`

@@ -7,7 +7,12 @@ const coreMocks = vi.hoisted(() => ({
 
 vi.mock('@actions/core', () => coreMocks)
 
-import { getInputs, parseMode, parseRepositories } from '../inputs.js'
+import {
+  getInputs,
+  parseMode,
+  parsePruneIgnore,
+  parseRepositories,
+} from '../inputs.js'
 
 describe('parseMode', () => {
   it.each(['sync', 'preview', 'check'] as const)('accepts %s mode', (mode) => {
@@ -53,6 +58,17 @@ describe('parseRepositories', () => {
     )
   })
 })
+
+describe('parsePruneIgnore', () => {
+  it('parses comma and newline separated patterns case-insensitively', () => {
+    expect(
+      parsePruneIgnore(
+        'dependencies\n release:* , GitHub-Actions\nDEPENDENCIES',
+      ),
+    ).toEqual(['DEPENDENCIES', 'release:*', 'GitHub-Actions'])
+  })
+})
+
 describe('getInputs', () => {
   beforeEach(() => {
     coreMocks.getInput.mockReset()
@@ -65,6 +81,7 @@ describe('getInputs', () => {
         'github-token': 'token',
         'labels-file': 'labels.yml',
         repositories: 'owner/one,owner/two',
+        'prune-ignore': 'dependencies\nrelease:*',
       }
       return values[name] ?? ''
     })
@@ -77,6 +94,7 @@ describe('getInputs', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: true,
+      pruneIgnore: ['dependencies', 'release:*'],
       mode: 'sync',
     })
   })

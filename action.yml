@@ -23,6 +23,10 @@ inputs:
     description: "Delete labels that are not present in the configuration."
     required: false
     default: "false"
+  prune-ignore:
+    description: "Comma- or newline-separated label names or glob patterns excluded from pruning."
+    required: false
+    default: ""
   mode:
     description: "Operating mode: sync applies changes, preview reports them, and check reports them and fails on drift."
     required: false

@@ -7,6 +7,7 @@ import {
   escapeHtml,
   MAX_DETAILED_CHANGES,
   renderChangeTable,
+  renderIgnoredLabels,
 } from './summary.js'
 import { syncRepository } from './sync.js'
 import type { LabelChange, RepositorySync, SyncResult } from './types.js'
@@ -59,11 +60,15 @@ export async function run(): Promise<void> {
         try {
           const sync = await syncRepository(api, repository, labels, {
             prune: inputs.prune,
+            pruneIgnore: inputs.pruneIgnore,
             dryRun,
           })
           syncs.push(sync)
           for (const change of sync.changes) {
             core.info(describeChange(change))
+          }
+          for (const label of sync.ignored ?? []) {
+            core.info(`ignore ${label.name} (matched prune-ignore)`)
           }
         } catch (error) {
           const message = `${repository}: ${(error as Error).message}`
@@ -110,18 +115,24 @@ export async function run(): Promise<void> {
 
     for (const sync of syncs) {
       const rendered = renderChangeTable(sync.changes)
-      if (rendered.total === 0) {
-        continue
+      if (rendered.total > 0) {
+        const state = sync.result.dryRun ? 'planned' : 'applied'
+        summary.addDetails(
+          `${escapeHtml(sync.result.repository)} — ${formatCount(rendered.total, `${state} change`)}`,
+          rendered.html,
+        )
+        if (rendered.truncated) {
+          core.notice(
+            `Detailed summary for ${sync.result.repository} shows the first ${MAX_DETAILED_CHANGES} of ${rendered.total} changes`,
+          )
+        }
       }
 
-      const state = sync.result.dryRun ? 'planned' : 'applied'
-      summary.addDetails(
-        `${escapeHtml(sync.result.repository)} — ${formatCount(rendered.total, `${state} change`)}`,
-        rendered.html,
-      )
-      if (rendered.truncated) {
-        core.notice(
-          `Detailed summary for ${sync.result.repository} shows the first ${MAX_DETAILED_CHANGES} of ${rendered.total} changes`,
+      const ignored = sync.ignored ?? []
+      if (ignored.length > 0) {
+        summary.addDetails(
+          `${escapeHtml(sync.result.repository)} — ${formatCount(ignored.length, 'label')} protected from pruning`,
+          renderIgnoredLabels(ignored.map((label) => label.name)),
         )
       }
     }

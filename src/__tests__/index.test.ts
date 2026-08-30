@@ -58,6 +58,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneIgnore: [],
       mode: 'preview',
     })
     mocks.loadLabelConfig.mockResolvedValue([
@@ -149,12 +150,47 @@ describe('run', () => {
     expect(mocks.setFailed).not.toHaveBeenCalled()
   })
 
+  it('reports labels protected from pruning in logs and the job summary', async () => {
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one'],
+      prune: true,
+      pruneIgnore: ['dependencies'],
+      mode: 'preview',
+    })
+    mocks.syncRepository.mockResolvedValue({
+      result: {
+        repository: 'owner/one',
+        created: 0,
+        updated: 0,
+        deleted: 0,
+        unchanged: 0,
+        dryRun: true,
+      },
+      changes: [],
+      ignored: [{ name: 'Dependencies', color: '0366d6', description: null }],
+    })
+
+    await run()
+
+    expect(mocks.info).toHaveBeenCalledWith(
+      'ignore Dependencies (matched prune-ignore)',
+    )
+    expect(mocks.summary.addDetails).toHaveBeenCalledWith(
+      'owner/one — 1 label protected from pruning',
+      '<ul><li><code>Dependencies</code></li></ul>',
+    )
+    expect(mocks.setFailed).not.toHaveBeenCalled()
+  })
+
   it('applies changes and uses the default heading in sync mode', async () => {
     mocks.getInputs.mockReturnValue({
       token: 'token',
       labelsFile: 'labels.yml',
       repositories: ['owner/one'],
       prune: false,
+      pruneIgnore: [],
       mode: 'sync',
     })
     mocks.syncRepository.mockResolvedValue({
@@ -186,7 +222,11 @@ describe('run', () => {
       expect.anything(),
       'owner/one',
       expect.any(Array),
-      { prune: false, dryRun: false },
+      {
+        prune: false,
+        pruneIgnore: [],
+        dryRun: false,
+      },
     )
     expect(mocks.summary.addHeading).toHaveBeenCalledWith('Label Blueprint')
     expect(mocks.summary.addDetails).toHaveBeenCalledWith(
@@ -254,6 +294,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneIgnore: [],
       mode: 'check',
     })
     mocks.syncRepository
@@ -299,7 +340,7 @@ describe('run', () => {
       expect.anything(),
       expect.any(String),
       expect.any(Array),
-      { prune: false, dryRun: true },
+      { prune: false, pruneIgnore: [], dryRun: true },
     )
     expect(mocks.setOutput).toHaveBeenCalledWith('created', 1)
     expect(mocks.setOutput).toHaveBeenCalledWith('updated', 1)
@@ -319,6 +360,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneIgnore: [],
       mode: 'check',
     })
     mocks.syncRepository.mockImplementation(
@@ -399,6 +441,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneIgnore: [],
       mode: 'check',
     })
     mocks.syncRepository
