@@ -87,10 +87,7 @@ function changeName(change: PlanChange): string {
 }
 
 function compareChanges(left: PlanChange, right: PlanChange): number {
-  return (
-    compareText(changeName(left), changeName(right)) ||
-    compareText(left.operation, right.operation)
-  )
+  return compareText(changeName(left), changeName(right))
 }
 
 export function buildPlan(syncs: RepositorySync[]): SynchronizationPlan {
