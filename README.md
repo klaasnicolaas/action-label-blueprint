@@ -1,6 +1,6 @@
 <p align="center">
   <picture>
-    <img alt="Label Blueprint" src="https://raw.githubusercontent.com/klaasnicolaas/action-label-blueprint/main/.github/assets/icon.svg" width="96">
+    <img alt="Label Blueprint" src=".github/assets/icon.svg" width="96">
   </picture>
 </p>
 
