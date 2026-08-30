@@ -46,7 +46,7 @@ outputs:
   summary:
     description: "JSON array with synchronization counts for each repository."
   plan:
-    description: "Versioned JSON synchronization plan with current and desired values; empty when the plan exceeds the safe output limit."
+    description: "Versioned JSON synchronization plan, or an empty string when too large."
 
 runs:
   using: "node24"
