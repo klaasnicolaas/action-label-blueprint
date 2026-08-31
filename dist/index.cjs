@@ -583,10 +583,10 @@ var require_errors = __commonJS({
     };
     var kHTTPParserError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_HTTP_PARSER");
     var HTTPParserError = class extends Error {
-      constructor(message, code, data) {
+      constructor(message, code2, data) {
         super(message);
         this.name = "HTTPParserError";
-        this.code = code ? `HPE_${code}` : void 0;
+        this.code = code2 ? `HPE_${code2}` : void 0;
         this.data = data ? data.toString() : void 0;
       }
       static [Symbol.hasInstance](instance) {
@@ -609,12 +609,12 @@ var require_errors = __commonJS({
     };
     var kRequestRetryError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_REQ_RETRY");
     var RequestRetryError = class extends UndiciError {
-      constructor(message, code, { headers, data }) {
+      constructor(message, code2, { headers, data }) {
         super(message);
         this.name = "RequestRetryError";
         this.message = message || "Request retry error";
         this.code = "UND_ERR_REQ_RETRY";
-        this.statusCode = code;
+        this.statusCode = code2;
         this.data = data;
         this.headers = headers;
       }
@@ -625,12 +625,12 @@ var require_errors = __commonJS({
     };
     var kResponseError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_RESPONSE");
     var ResponseError = class extends UndiciError {
-      constructor(message, code, { headers, data }) {
+      constructor(message, code2, { headers, data }) {
         super(message);
         this.name = "ResponseError";
         this.message = message || "Response error";
         this.code = "UND_ERR_RESPONSE";
-        this.statusCode = code;
+        this.statusCode = code2;
         this.data = data;
         this.headers = headers;
       }
@@ -840,8 +840,8 @@ var require_tree = __commonJS({
         if (index === void 0 || index >= key.length) {
           throw new TypeError("Unreachable");
         }
-        const code = this.code = key.charCodeAt(index);
-        if (code > 127) {
+        const code2 = this.code = key.charCodeAt(index);
+        if (code2 > 127) {
           throw new TypeError("key must be ascii string");
         }
         if (key.length !== ++index) {
@@ -862,11 +862,11 @@ var require_tree = __commonJS({
         let index = 0;
         let node = this;
         while (true) {
-          const code = key.charCodeAt(index);
-          if (code > 127) {
+          const code2 = key.charCodeAt(index);
+          if (code2 > 127) {
             throw new TypeError("key must be ascii string");
           }
-          if (node.code === code) {
+          if (node.code === code2) {
             if (length === ++index) {
               node.value = value;
               break;
@@ -876,7 +876,7 @@ var require_tree = __commonJS({
               node.middle = new _TstNode(key, value, index);
               break;
             }
-          } else if (node.code < code) {
+          } else if (node.code < code2) {
             if (node.left !== null) {
               node = node.left;
             } else {
@@ -900,19 +900,19 @@ var require_tree = __commonJS({
         let index = 0;
         let node = this;
         while (node !== null && index < keylength) {
-          let code = key[index];
-          if (code <= 90 && code >= 65) {
-            code |= 32;
+          let code2 = key[index];
+          if (code2 <= 90 && code2 >= 65) {
+            code2 |= 32;
           }
           while (node !== null) {
-            if (code === node.code) {
+            if (code2 === node.code) {
               if (keylength === ++index) {
                 return node;
               }
               node = node.middle;
               break;
             }
-            node = node.code < code ? node.left : node.right;
+            node = node.code < code2 ? node.left : node.right;
           }
         }
         return null;
@@ -1365,15 +1365,15 @@ var require_util = __commonJS({
         size: m[3] ? parseInt(m[3]) : null
       } : null;
     }
-    function addListener(obj, name, listener) {
+    function addListener(obj, name2, listener) {
       const listeners = obj[kListeners] ??= [];
-      listeners.push([name, listener]);
-      obj.on(name, listener);
+      listeners.push([name2, listener]);
+      obj.on(name2, listener);
       return obj;
     }
     function removeAllListeners(obj) {
-      for (const [name, listener] of obj[kListeners] ?? []) {
-        obj.removeListener(name, listener);
+      for (const [name2, listener] of obj[kListeners] ?? []) {
+        obj.removeListener(name2, listener);
       }
       obj[kListeners] = null;
     }
@@ -1619,11 +1619,11 @@ var require_diagnostics = __commonJS({
         websocketDebuglog("connection opened %s%s", address, port ? `:${port}` : "");
       });
       diagnosticsChannel.channel("undici:websocket:close").subscribe((evt) => {
-        const { websocket, code, reason } = evt;
+        const { websocket, code: code2, reason } = evt;
         websocketDebuglog(
           "closed connection to %s - %s %s",
           websocket.url,
-          code,
+          code2,
           reason
         );
       });
@@ -3477,9 +3477,9 @@ var require_data_url = __commonJS({
       assert(mimeType !== "failure");
       const { parameters, essence } = mimeType;
       let serialization = essence;
-      for (let [name, value] of parameters.entries()) {
+      for (let [name2, value] of parameters.entries()) {
         serialization += ";";
-        serialization += name;
+        serialization += name2;
         serialization += "=";
         if (!HTTP_TOKEN_CODEPOINTS.test(value)) {
           value = value.replace(/(\\|")/g, "\\$1");
@@ -3927,11 +3927,11 @@ var require_webidl = __commonJS({
       }
       return V;
     };
-    webidl.converters.TypedArray = function(V, T, prefix, name, opts) {
+    webidl.converters.TypedArray = function(V, T, prefix, name2, opts) {
       if (webidl.util.Type(V) !== "Object" || !types.isTypedArray(V) || V.constructor.name !== T.name) {
         throw webidl.errors.conversionFailed({
           prefix,
-          argument: `${name} ("${webidl.util.Stringify(V)}")`,
+          argument: `${name2} ("${webidl.util.Stringify(V)}")`,
           types: [T.name]
         });
       }
@@ -3949,11 +3949,11 @@ var require_webidl = __commonJS({
       }
       return V;
     };
-    webidl.converters.DataView = function(V, prefix, name, opts) {
+    webidl.converters.DataView = function(V, prefix, name2, opts) {
       if (webidl.util.Type(V) !== "Object" || !types.isDataView(V)) {
         throw webidl.errors.exception({
           header: prefix,
-          message: `${name} is not a DataView.`
+          message: `${name2} is not a DataView.`
         });
       }
       if (opts?.allowShared === false && types.isSharedArrayBuffer(V.buffer)) {
@@ -3970,19 +3970,19 @@ var require_webidl = __commonJS({
       }
       return V;
     };
-    webidl.converters.BufferSource = function(V, prefix, name, opts) {
+    webidl.converters.BufferSource = function(V, prefix, name2, opts) {
       if (types.isAnyArrayBuffer(V)) {
-        return webidl.converters.ArrayBuffer(V, prefix, name, { ...opts, allowShared: false });
+        return webidl.converters.ArrayBuffer(V, prefix, name2, { ...opts, allowShared: false });
       }
       if (types.isTypedArray(V)) {
-        return webidl.converters.TypedArray(V, V.constructor, prefix, name, { ...opts, allowShared: false });
+        return webidl.converters.TypedArray(V, V.constructor, prefix, name2, { ...opts, allowShared: false });
       }
       if (types.isDataView(V)) {
-        return webidl.converters.DataView(V, prefix, name, { ...opts, allowShared: false });
+        return webidl.converters.DataView(V, prefix, name2, { ...opts, allowShared: false });
       }
       throw webidl.errors.conversionFailed({
         prefix,
-        argument: `${name} ("${webidl.util.Stringify(V)}")`,
+        argument: `${name2} ("${webidl.util.Stringify(V)}")`,
         types: ["BufferSource"]
       });
     };
@@ -4047,9 +4047,9 @@ var require_util2 = __commonJS({
     }
     function isValidEncodedURL(url) {
       for (let i = 0; i < url.length; ++i) {
-        const code = url.charCodeAt(i);
-        if (code > 126 || // Non-US-ASCII + DEL
-        code < 32) {
+        const code2 = url.charCodeAt(i);
+        if (code2 > 126 || // Non-US-ASCII + DEL
+        code2 < 32) {
           return false;
         }
       }
@@ -4426,7 +4426,7 @@ var require_util2 = __commonJS({
       return result;
     }
     var esIteratorPrototype = Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]()));
-    function createIterator(name, kInternalIterator, keyIndex = 0, valueIndex = 1) {
+    function createIterator(name2, kInternalIterator, keyIndex = 0, valueIndex = 1) {
       class FastIterableIterator {
         /** @type {any} */
         #target;
@@ -4447,7 +4447,7 @@ var require_util2 = __commonJS({
         next() {
           if (typeof this !== "object" || this === null || !(#target in this)) {
             throw new TypeError(
-              `'next' called on an object that does not implement interface ${name} Iterator.`
+              `'next' called on an object that does not implement interface ${name2} Iterator.`
             );
           }
           const index = this.#index;
@@ -4486,7 +4486,7 @@ var require_util2 = __commonJS({
           writable: false,
           enumerable: false,
           configurable: true,
-          value: `${name} Iterator`
+          value: `${name2} Iterator`
         },
         next: { writable: true, enumerable: true, configurable: true }
       });
@@ -4494,8 +4494,8 @@ var require_util2 = __commonJS({
         return new FastIterableIterator(target, kind);
       };
     }
-    function iteratorMixin(name, object, kInternalIterator, keyIndex = 0, valueIndex = 1) {
-      const makeIterator = createIterator(name, kInternalIterator, keyIndex, valueIndex);
+    function iteratorMixin(name2, object, kInternalIterator, keyIndex = 0, valueIndex = 1) {
+      const makeIterator = createIterator(name2, kInternalIterator, keyIndex, valueIndex);
       const properties = {
         keys: {
           writable: true,
@@ -4530,10 +4530,10 @@ var require_util2 = __commonJS({
           configurable: true,
           value: function forEach(callbackfn, thisArg = globalThis) {
             webidl.brandCheck(this, object);
-            webidl.argumentLengthCheck(arguments, 1, `${name}.forEach`);
+            webidl.argumentLengthCheck(arguments, 1, `${name2}.forEach`);
             if (typeof callbackfn !== "function") {
               throw new TypeError(
-                `Failed to execute 'forEach' on '${name}': parameter 1 is not of type 'Function'.`
+                `Failed to execute 'forEach' on '${name2}': parameter 1 is not of type 'Function'.`
               );
             }
             for (const { 0: key, 1: value } of makeIterator(this, "key+value")) {
@@ -4640,8 +4640,8 @@ var require_util2 = __commonJS({
       }
       const rangeStart = collectASequenceOfCodePoints(
         (char) => {
-          const code = char.charCodeAt(0);
-          return code >= 48 && code <= 57;
+          const code2 = char.charCodeAt(0);
+          return code2 >= 48 && code2 <= 57;
         },
         data,
         position
@@ -4667,8 +4667,8 @@ var require_util2 = __commonJS({
       }
       const rangeEnd = collectASequenceOfCodePoints(
         (char) => {
-          const code = char.charCodeAt(0);
-          return code >= 48 && code <= 57;
+          const code2 = char.charCodeAt(0);
+          return code2 >= 48 && code2 <= 57;
         },
         data,
         position
@@ -4785,8 +4785,8 @@ var require_util2 = __commonJS({
       }
       return values;
     }
-    function getDecodeSplit(name, list) {
-      const value = list.get(name, true);
+    function getDecodeSplit(name2, list) {
+      const value = list.get(name2, true);
       if (value === null) {
         return null;
       }
@@ -4973,7 +4973,7 @@ var require_formdata = __commonJS({
         }
         this[kState] = [];
       }
-      append(name, value, filename = void 0) {
+      append(name2, value, filename = void 0) {
         webidl.brandCheck(this, _FormData);
         const prefix = "FormData.append";
         webidl.argumentLengthCheck(arguments, 2, prefix);
@@ -4982,45 +4982,45 @@ var require_formdata = __commonJS({
             "Failed to execute 'append' on 'FormData': parameter 2 is not of type 'Blob'"
           );
         }
-        name = webidl.converters.USVString(name, prefix, "name");
+        name2 = webidl.converters.USVString(name2, prefix, "name");
         value = isBlobLike(value) ? webidl.converters.Blob(value, prefix, "value", { strict: false }) : webidl.converters.USVString(value, prefix, "value");
         filename = arguments.length === 3 ? webidl.converters.USVString(filename, prefix, "filename") : void 0;
-        const entry = makeEntry(name, value, filename);
+        const entry = makeEntry(name2, value, filename);
         this[kState].push(entry);
       }
-      delete(name) {
+      delete(name2) {
         webidl.brandCheck(this, _FormData);
         const prefix = "FormData.delete";
         webidl.argumentLengthCheck(arguments, 1, prefix);
-        name = webidl.converters.USVString(name, prefix, "name");
-        this[kState] = this[kState].filter((entry) => entry.name !== name);
+        name2 = webidl.converters.USVString(name2, prefix, "name");
+        this[kState] = this[kState].filter((entry) => entry.name !== name2);
       }
-      get(name) {
+      get(name2) {
         webidl.brandCheck(this, _FormData);
         const prefix = "FormData.get";
         webidl.argumentLengthCheck(arguments, 1, prefix);
-        name = webidl.converters.USVString(name, prefix, "name");
-        const idx = this[kState].findIndex((entry) => entry.name === name);
+        name2 = webidl.converters.USVString(name2, prefix, "name");
+        const idx = this[kState].findIndex((entry) => entry.name === name2);
         if (idx === -1) {
           return null;
         }
         return this[kState][idx].value;
       }
-      getAll(name) {
+      getAll(name2) {
         webidl.brandCheck(this, _FormData);
         const prefix = "FormData.getAll";
         webidl.argumentLengthCheck(arguments, 1, prefix);
-        name = webidl.converters.USVString(name, prefix, "name");
-        return this[kState].filter((entry) => entry.name === name).map((entry) => entry.value);
+        name2 = webidl.converters.USVString(name2, prefix, "name");
+        return this[kState].filter((entry) => entry.name === name2).map((entry) => entry.value);
       }
-      has(name) {
+      has(name2) {
         webidl.brandCheck(this, _FormData);
         const prefix = "FormData.has";
         webidl.argumentLengthCheck(arguments, 1, prefix);
-        name = webidl.converters.USVString(name, prefix, "name");
-        return this[kState].findIndex((entry) => entry.name === name) !== -1;
+        name2 = webidl.converters.USVString(name2, prefix, "name");
+        return this[kState].findIndex((entry) => entry.name === name2) !== -1;
       }
-      set(name, value, filename = void 0) {
+      set(name2, value, filename = void 0) {
         webidl.brandCheck(this, _FormData);
         const prefix = "FormData.set";
         webidl.argumentLengthCheck(arguments, 2, prefix);
@@ -5029,16 +5029,16 @@ var require_formdata = __commonJS({
             "Failed to execute 'set' on 'FormData': parameter 2 is not of type 'Blob'"
           );
         }
-        name = webidl.converters.USVString(name, prefix, "name");
+        name2 = webidl.converters.USVString(name2, prefix, "name");
         value = isBlobLike(value) ? webidl.converters.Blob(value, prefix, "name", { strict: false }) : webidl.converters.USVString(value, prefix, "name");
         filename = arguments.length === 3 ? webidl.converters.USVString(filename, prefix, "name") : void 0;
-        const entry = makeEntry(name, value, filename);
-        const idx = this[kState].findIndex((entry2) => entry2.name === name);
+        const entry = makeEntry(name2, value, filename);
+        const idx = this[kState].findIndex((entry2) => entry2.name === name2);
         if (idx !== -1) {
           this[kState] = [
             ...this[kState].slice(0, idx),
             entry,
-            ...this[kState].slice(idx + 1).filter((entry2) => entry2.name !== name)
+            ...this[kState].slice(idx + 1).filter((entry2) => entry2.name !== name2)
           ];
         } else {
           this[kState].push(entry);
@@ -5076,7 +5076,7 @@ var require_formdata = __commonJS({
         configurable: true
       }
     });
-    function makeEntry(name, value, filename) {
+    function makeEntry(name2, value, filename) {
       if (typeof value === "string") {
       } else {
         if (!isFileLike(value)) {
@@ -5090,7 +5090,7 @@ var require_formdata = __commonJS({
           value = value instanceof NativeFile ? new File([value], filename, options) : new FileLike(value, filename, options);
         }
       }
-      return { name, value };
+      return { name: name2, value };
     }
     module2.exports = { FormData, makeEntry };
   }
@@ -5169,7 +5169,7 @@ var require_formdata_parser = __commonJS({
         if (result === "failure") {
           return "failure";
         }
-        let { name, filename, contentType, encoding } = result;
+        let { name: name2, filename, contentType, encoding } = result;
         position.position += 2;
         let body;
         {
@@ -5198,22 +5198,22 @@ var require_formdata_parser = __commonJS({
         } else {
           value = utf8DecodeBytes(Buffer.from(body));
         }
-        assert(isUSVString(name));
+        assert(isUSVString(name2));
         assert(typeof value === "string" && isUSVString(value) || isFileLike(value));
-        entryList.push(makeEntry(name, value, filename));
+        entryList.push(makeEntry(name2, value, filename));
       }
     }
     function parseMultipartFormDataHeaders(input, position) {
-      let name = null;
+      let name2 = null;
       let filename = null;
       let contentType = null;
       let encoding = null;
       while (true) {
         if (input[position.position] === 13 && input[position.position + 1] === 10) {
-          if (name === null) {
+          if (name2 === null) {
             return "failure";
           }
-          return { name, filename, contentType, encoding };
+          return { name: name2, filename, contentType, encoding };
         }
         let headerName = collectASequenceOfBytes(
           (char) => char !== 10 && char !== 13 && char !== 58,
@@ -5235,13 +5235,13 @@ var require_formdata_parser = __commonJS({
         );
         switch (bufferToLowerCasedHeaderName(headerName)) {
           case "content-disposition": {
-            name = filename = null;
+            name2 = filename = null;
             if (!bufferStartsWith(input, formDataNameBuffer, position)) {
               return "failure";
             }
             position.position += 17;
-            name = parseMultipartFormDataName(input, position);
-            if (name === null) {
+            name2 = parseMultipartFormDataName(input, position);
+            if (name2 === null) {
               return "failure";
             }
             if (bufferStartsWith(input, filenameBuffer, position)) {
@@ -5298,7 +5298,7 @@ var require_formdata_parser = __commonJS({
     }
     function parseMultipartFormDataName(input, position) {
       assert(input[position.position - 1] === 34);
-      let name = collectASequenceOfBytes(
+      let name2 = collectASequenceOfBytes(
         (char) => char !== 10 && char !== 13 && char !== 34,
         input,
         position
@@ -5308,8 +5308,8 @@ var require_formdata_parser = __commonJS({
       } else {
         position.position++;
       }
-      name = new TextDecoder().decode(name).replace(/%0A/ig, "\n").replace(/%0D/ig, "\r").replace(/%22/g, '"');
-      return name;
+      name2 = new TextDecoder().decode(name2).replace(/%0A/ig, "\n").replace(/%0D/ig, "\r").replace(/%22/g, '"');
+      return name2;
     }
     function collectASequenceOfBytes(condition, input, position) {
       let start = position.position;
@@ -5436,16 +5436,16 @@ Content-Disposition: form-data`;
         const rn = new Uint8Array([13, 10]);
         length = 0;
         let hasUnknownSizeValue = false;
-        for (const [name, value] of object) {
+        for (const [name2, value] of object) {
           if (typeof value === "string") {
-            const chunk2 = textEncoder.encode(prefix + `; name="${escape(normalizeLinefeeds(name))}"\r
+            const chunk2 = textEncoder.encode(prefix + `; name="${escape(normalizeLinefeeds(name2))}"\r
 \r
 ${normalizeLinefeeds(value)}\r
 `);
             blobParts.push(chunk2);
             length += chunk2.byteLength;
           } else {
-            const chunk2 = textEncoder.encode(`${prefix}; name="${escape(normalizeLinefeeds(name))}"` + (value.name ? `; filename="${escape(value.name)}"` : "") + `\r
+            const chunk2 = textEncoder.encode(`${prefix}; name="${escape(normalizeLinefeeds(name2))}"` + (value.name ? `; filename="${escape(value.name)}"` : "") + `\r
 Content-Type: ${value.type || "application/octet-stream"}\r
 \r
 `);
@@ -5589,8 +5589,8 @@ Content-Type: ${value.type || "application/octet-stream"}\r
                 case "application/x-www-form-urlencoded": {
                   const entries = new URLSearchParams(value.toString());
                   const fd = new FormData();
-                  for (const [name, value2] of entries) {
-                    fd.append(name, value2);
+                  for (const [name2, value2] of entries) {
+                    fd.append(name2, value2);
                   }
                   return fd;
                 }
@@ -6840,13 +6840,13 @@ var require_client_h2 = __commonJS({
     } = http2;
     function parseH2Headers(headers) {
       const result = [];
-      for (const [name, value] of Object.entries(headers)) {
+      for (const [name2, value] of Object.entries(headers)) {
         if (Array.isArray(value)) {
           for (const subvalue of value) {
-            result.push(Buffer.from(name), Buffer.from(subvalue));
+            result.push(Buffer.from(name2), Buffer.from(subvalue));
           }
         } else {
-          result.push(Buffer.from(name), Buffer.from(value));
+          result.push(Buffer.from(name2), Buffer.from(value));
         }
       }
       return result;
@@ -6951,9 +6951,9 @@ var require_client_h2 = __commonJS({
       this[kSocket][kError] = err;
       this[kClient][kOnError](err);
     }
-    function onHttp2FrameError(type, code, id) {
+    function onHttp2FrameError(type, code2, id) {
       if (id === 0) {
-        const err = new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code}`);
+        const err = new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code2}`);
         this[kSocket][kError] = err;
         this[kClient][kOnError](err);
       }
@@ -6963,8 +6963,8 @@ var require_client_h2 = __commonJS({
       this.destroy(err);
       util.destroy(this[kSocket], err);
     }
-    function onHTTP2GoAway(code) {
-      const err = this[kError] || new SocketError(`HTTP/2: "GOAWAY" frame received with code ${code}`, util.getSocketInfo(this));
+    function onHTTP2GoAway(code2) {
+      const err = this[kError] || new SocketError(`HTTP/2: "GOAWAY" frame received with code ${code2}`, util.getSocketInfo(this));
       const client = this[kClient];
       client[kSocket] = null;
       client[kHTTPContext] = null;
@@ -7139,8 +7139,8 @@ var require_client_h2 = __commonJS({
       stream.once("error", function(err) {
         abort(err);
       });
-      stream.once("frameError", (type, code) => {
-        abort(new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code}`));
+      stream.once("frameError", (type, code2) => {
+        abort(new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code2}`));
       });
       return true;
       function writeBodyH2() {
@@ -7458,8 +7458,8 @@ var require_redirect_handler = __commonJS({
         return true;
       }
       if (unknownOrigin && (header.length === 13 || header.length === 6 || header.length === 19)) {
-        const name = util.headerNameToString(header);
-        return name === "authorization" || name === "cookie" || name === "proxy-authorization";
+        const name2 = util.headerNameToString(header);
+        return name2 === "authorization" || name2 === "cookie" || name2 === "proxy-authorization";
       }
       return false;
     }
@@ -9062,7 +9062,7 @@ var require_retry_handler = __commonJS({
         if (this.handler.onBodySent) return this.handler.onBodySent(chunk);
       }
       static [kRetryHandlerDefaultRetry](err, { state, opts }, cb) {
-        const { statusCode, code, headers } = err;
+        const { statusCode, code: code2, headers } = err;
         const { method, retryOptions } = opts;
         const {
           maxRetries,
@@ -9074,7 +9074,7 @@ var require_retry_handler = __commonJS({
           methods
         } = retryOptions;
         const { counter } = state;
-        if (code && code !== "UND_ERR_REQ_RETRY" && !errorCodes.includes(code)) {
+        if (code2 && code2 !== "UND_ERR_REQ_RETRY" && !errorCodes.includes(code2)) {
           cb(err);
           return;
         }
@@ -10685,13 +10685,13 @@ var require_mock_utils = __commonJS({
       for (let i = 0; i < keys.length; ++i) {
         const key = keys[i];
         const value = data[key];
-        const name = Buffer.from(`${key}`);
+        const name2 = Buffer.from(`${key}`);
         if (Array.isArray(value)) {
           for (let j = 0; j < value.length; ++j) {
-            result.push(name, Buffer.from(`${value[j]}`));
+            result.push(name2, Buffer.from(`${value[j]}`));
           }
         } else {
-          result.push(name, Buffer.from(`${value}`));
+          result.push(name2, Buffer.from(`${value}`));
         }
       }
       return result;
@@ -11806,8 +11806,8 @@ var require_headers = __commonJS({
     var util = require("node:util");
     var kHeadersMap = /* @__PURE__ */ Symbol("headers map");
     var kHeadersSortedMap = /* @__PURE__ */ Symbol("headers map sorted");
-    function isHTTPWhiteSpaceCharCode(code) {
-      return code === 10 || code === 13 || code === 9 || code === 32;
+    function isHTTPWhiteSpaceCharCode(code2) {
+      return code2 === 10 || code2 === 13 || code2 === 9 || code2 === 32;
     }
     function headerValueNormalize(potentialValue) {
       let i = 0;
@@ -11841,12 +11841,12 @@ var require_headers = __commonJS({
         });
       }
     }
-    function appendHeader(headers, name, value) {
+    function appendHeader(headers, name2, value) {
       value = headerValueNormalize(value);
-      if (!isValidHeaderName(name)) {
+      if (!isValidHeaderName(name2)) {
         throw webidl.errors.invalidArgument({
           prefix: "Headers.append",
-          value: name,
+          value: name2,
           type: "header name"
         });
       } else if (!isValidHeaderValue(value)) {
@@ -11859,7 +11859,7 @@ var require_headers = __commonJS({
       if (getHeadersGuard(headers) === "immutable") {
         throw new TypeError("immutable");
       }
-      return getHeadersList(headers).append(name, value, false);
+      return getHeadersList(headers).append(name2, value, false);
     }
     function compareHeaderName(a, b) {
       return a[0] < b[0] ? -1 : 1;
@@ -11882,8 +11882,8 @@ var require_headers = __commonJS({
        * @param {string} name
        * @param {boolean} isLowerCase
        */
-      contains(name, isLowerCase) {
-        return this[kHeadersMap].has(isLowerCase ? name : name.toLowerCase());
+      contains(name2, isLowerCase) {
+        return this[kHeadersMap].has(isLowerCase ? name2 : name2.toLowerCase());
       }
       clear() {
         this[kHeadersMap].clear();
@@ -11896,9 +11896,9 @@ var require_headers = __commonJS({
        * @param {string} value
        * @param {boolean} isLowerCase
        */
-      append(name, value, isLowerCase) {
+      append(name2, value, isLowerCase) {
         this[kHeadersSortedMap] = null;
-        const lowercaseName = isLowerCase ? name : name.toLowerCase();
+        const lowercaseName = isLowerCase ? name2 : name2.toLowerCase();
         const exists2 = this[kHeadersMap].get(lowercaseName);
         if (exists2) {
           const delimiter = lowercaseName === "cookie" ? "; " : ", ";
@@ -11907,7 +11907,7 @@ var require_headers = __commonJS({
             value: `${exists2.value}${delimiter}${value}`
           });
         } else {
-          this[kHeadersMap].set(lowercaseName, { name, value });
+          this[kHeadersMap].set(lowercaseName, { name: name2, value });
         }
         if (lowercaseName === "set-cookie") {
           (this.cookies ??= []).push(value);
@@ -11919,26 +11919,26 @@ var require_headers = __commonJS({
        * @param {string} value
        * @param {boolean} isLowerCase
        */
-      set(name, value, isLowerCase) {
+      set(name2, value, isLowerCase) {
         this[kHeadersSortedMap] = null;
-        const lowercaseName = isLowerCase ? name : name.toLowerCase();
+        const lowercaseName = isLowerCase ? name2 : name2.toLowerCase();
         if (lowercaseName === "set-cookie") {
           this.cookies = [value];
         }
-        this[kHeadersMap].set(lowercaseName, { name, value });
+        this[kHeadersMap].set(lowercaseName, { name: name2, value });
       }
       /**
        * @see https://fetch.spec.whatwg.org/#concept-header-list-delete
        * @param {string} name
        * @param {boolean} isLowerCase
        */
-      delete(name, isLowerCase) {
+      delete(name2, isLowerCase) {
         this[kHeadersSortedMap] = null;
-        if (!isLowerCase) name = name.toLowerCase();
-        if (name === "set-cookie") {
+        if (!isLowerCase) name2 = name2.toLowerCase();
+        if (name2 === "set-cookie") {
           this.cookies = null;
         }
-        this[kHeadersMap].delete(name);
+        this[kHeadersMap].delete(name2);
       }
       /**
        * @see https://fetch.spec.whatwg.org/#concept-header-list-get
@@ -11946,19 +11946,19 @@ var require_headers = __commonJS({
        * @param {boolean} isLowerCase
        * @returns {string | null}
        */
-      get(name, isLowerCase) {
-        return this[kHeadersMap].get(isLowerCase ? name : name.toLowerCase())?.value ?? null;
+      get(name2, isLowerCase) {
+        return this[kHeadersMap].get(isLowerCase ? name2 : name2.toLowerCase())?.value ?? null;
       }
       *[Symbol.iterator]() {
-        for (const { 0: name, 1: { value } } of this[kHeadersMap]) {
-          yield [name, value];
+        for (const { 0: name2, 1: { value } } of this[kHeadersMap]) {
+          yield [name2, value];
         }
       }
       get entries() {
         const headers = {};
         if (this[kHeadersMap].size !== 0) {
-          for (const { name, value } of this[kHeadersMap].values()) {
-            headers[name] = value;
+          for (const { name: name2, value } of this[kHeadersMap].values()) {
+            headers[name2] = value;
           }
         }
         return headers;
@@ -11969,13 +11969,13 @@ var require_headers = __commonJS({
       get entriesList() {
         const headers = [];
         if (this[kHeadersMap].size !== 0) {
-          for (const { 0: lowerName, 1: { name, value } } of this[kHeadersMap]) {
+          for (const { 0: lowerName, 1: { name: name2, value } } of this[kHeadersMap]) {
             if (lowerName === "set-cookie") {
               for (const cookie of this.cookies) {
-                headers.push([name, cookie]);
+                headers.push([name2, cookie]);
               }
             } else {
-              headers.push([name, value]);
+              headers.push([name2, value]);
             }
           }
         }
@@ -12021,8 +12021,8 @@ var require_headers = __commonJS({
           return array;
         } else {
           let i = 0;
-          for (const { 0: name, 1: { value } } of this[kHeadersMap]) {
-            array[i++] = [name, value];
+          for (const { 0: name2, 1: { value } } of this[kHeadersMap]) {
+            array[i++] = [name2, value];
             assert(value !== null);
           }
           return array.sort(compareHeaderName);
@@ -12045,77 +12045,77 @@ var require_headers = __commonJS({
         }
       }
       // https://fetch.spec.whatwg.org/#dom-headers-append
-      append(name, value) {
+      append(name2, value) {
         webidl.brandCheck(this, _Headers);
         webidl.argumentLengthCheck(arguments, 2, "Headers.append");
         const prefix = "Headers.append";
-        name = webidl.converters.ByteString(name, prefix, "name");
+        name2 = webidl.converters.ByteString(name2, prefix, "name");
         value = webidl.converters.ByteString(value, prefix, "value");
-        return appendHeader(this, name, value);
+        return appendHeader(this, name2, value);
       }
       // https://fetch.spec.whatwg.org/#dom-headers-delete
-      delete(name) {
+      delete(name2) {
         webidl.brandCheck(this, _Headers);
         webidl.argumentLengthCheck(arguments, 1, "Headers.delete");
         const prefix = "Headers.delete";
-        name = webidl.converters.ByteString(name, prefix, "name");
-        if (!isValidHeaderName(name)) {
+        name2 = webidl.converters.ByteString(name2, prefix, "name");
+        if (!isValidHeaderName(name2)) {
           throw webidl.errors.invalidArgument({
             prefix: "Headers.delete",
-            value: name,
+            value: name2,
             type: "header name"
           });
         }
         if (this.#guard === "immutable") {
           throw new TypeError("immutable");
         }
-        if (!this.#headersList.contains(name, false)) {
+        if (!this.#headersList.contains(name2, false)) {
           return;
         }
-        this.#headersList.delete(name, false);
+        this.#headersList.delete(name2, false);
       }
       // https://fetch.spec.whatwg.org/#dom-headers-get
-      get(name) {
+      get(name2) {
         webidl.brandCheck(this, _Headers);
         webidl.argumentLengthCheck(arguments, 1, "Headers.get");
         const prefix = "Headers.get";
-        name = webidl.converters.ByteString(name, prefix, "name");
-        if (!isValidHeaderName(name)) {
+        name2 = webidl.converters.ByteString(name2, prefix, "name");
+        if (!isValidHeaderName(name2)) {
           throw webidl.errors.invalidArgument({
             prefix,
-            value: name,
+            value: name2,
             type: "header name"
           });
         }
-        return this.#headersList.get(name, false);
+        return this.#headersList.get(name2, false);
       }
       // https://fetch.spec.whatwg.org/#dom-headers-has
-      has(name) {
+      has(name2) {
         webidl.brandCheck(this, _Headers);
         webidl.argumentLengthCheck(arguments, 1, "Headers.has");
         const prefix = "Headers.has";
-        name = webidl.converters.ByteString(name, prefix, "name");
-        if (!isValidHeaderName(name)) {
+        name2 = webidl.converters.ByteString(name2, prefix, "name");
+        if (!isValidHeaderName(name2)) {
           throw webidl.errors.invalidArgument({
             prefix,
-            value: name,
+            value: name2,
             type: "header name"
           });
         }
-        return this.#headersList.contains(name, false);
+        return this.#headersList.contains(name2, false);
       }
       // https://fetch.spec.whatwg.org/#dom-headers-set
-      set(name, value) {
+      set(name2, value) {
         webidl.brandCheck(this, _Headers);
         webidl.argumentLengthCheck(arguments, 2, "Headers.set");
         const prefix = "Headers.set";
-        name = webidl.converters.ByteString(name, prefix, "name");
+        name2 = webidl.converters.ByteString(name2, prefix, "name");
         value = webidl.converters.ByteString(value, prefix, "value");
         value = headerValueNormalize(value);
-        if (!isValidHeaderName(name)) {
+        if (!isValidHeaderName(name2)) {
           throw webidl.errors.invalidArgument({
             prefix,
-            value: name,
+            value: name2,
             type: "header name"
           });
         } else if (!isValidHeaderValue(value)) {
@@ -12128,7 +12128,7 @@ var require_headers = __commonJS({
         if (this.#guard === "immutable") {
           throw new TypeError("immutable");
         }
-        this.#headersList.set(name, value, false);
+        this.#headersList.set(name2, value, false);
       }
       // https://fetch.spec.whatwg.org/#dom-headers-getsetcookie
       getSetCookie() {
@@ -12151,13 +12151,13 @@ var require_headers = __commonJS({
           return this.#headersList[kHeadersSortedMap] = names;
         }
         for (let i = 0; i < names.length; ++i) {
-          const { 0: name, 1: value } = names[i];
-          if (name === "set-cookie") {
+          const { 0: name2, 1: value } = names[i];
+          if (name2 === "set-cookie") {
             for (let j = 0; j < cookies.length; ++j) {
-              headers.push([name, cookies[j]]);
+              headers.push([name2, cookies[j]]);
             }
           } else {
-            headers.push([name, value]);
+            headers.push([name2, value]);
           }
         }
         return this.#headersList[kHeadersSortedMap] = headers;
@@ -12577,23 +12577,23 @@ var require_response = __commonJS({
     webidl.converters.URLSearchParams = webidl.interfaceConverter(
       URLSearchParams
     );
-    webidl.converters.XMLHttpRequestBodyInit = function(V, prefix, name) {
+    webidl.converters.XMLHttpRequestBodyInit = function(V, prefix, name2) {
       if (typeof V === "string") {
-        return webidl.converters.USVString(V, prefix, name);
+        return webidl.converters.USVString(V, prefix, name2);
       }
       if (isBlobLike(V)) {
-        return webidl.converters.Blob(V, prefix, name, { strict: false });
+        return webidl.converters.Blob(V, prefix, name2, { strict: false });
       }
       if (ArrayBuffer.isView(V) || types.isArrayBuffer(V)) {
-        return webidl.converters.BufferSource(V, prefix, name);
+        return webidl.converters.BufferSource(V, prefix, name2);
       }
       if (util.isFormDataLike(V)) {
-        return webidl.converters.FormData(V, prefix, name, { strict: false });
+        return webidl.converters.FormData(V, prefix, name2, { strict: false });
       }
       if (V instanceof URLSearchParams) {
-        return webidl.converters.URLSearchParams(V, prefix, name);
+        return webidl.converters.URLSearchParams(V, prefix, name2);
       }
-      return webidl.converters.DOMString(V, prefix, name);
+      return webidl.converters.DOMString(V, prefix, name2);
     };
     webidl.converters.BodyInit = function(V, prefix, argument) {
       if (V instanceof ReadableStream) {
@@ -12964,8 +12964,8 @@ var require_request2 = __commonJS({
           const headers = init.headers !== void 0 ? init.headers : new HeadersList(headersList);
           headersList.clear();
           if (headers instanceof HeadersList) {
-            for (const { name, value } of headers.rawValues()) {
-              headersList.append(name, value, false);
+            for (const { name: name2, value } of headers.rawValues()) {
+              headersList.append(name2, value, false);
             }
             headersList.cookies = headers.cookies;
           } else {
@@ -15964,35 +15964,35 @@ var require_util6 = __commonJS({
     "use strict";
     function isCTLExcludingHtab(value) {
       for (let i = 0; i < value.length; ++i) {
-        const code = value.charCodeAt(i);
-        if (code >= 0 && code <= 8 || code >= 10 && code <= 31 || code === 127) {
+        const code2 = value.charCodeAt(i);
+        if (code2 >= 0 && code2 <= 8 || code2 >= 10 && code2 <= 31 || code2 === 127) {
           return true;
         }
       }
       return false;
     }
-    function validateCookieName(name) {
-      for (let i = 0; i < name.length; ++i) {
-        const code = name.charCodeAt(i);
-        if (code < 33 || // exclude CTLs (0-31), SP and HT
-        code > 126 || // exclude non-ascii and DEL
-        code === 34 || // "
-        code === 40 || // (
-        code === 41 || // )
-        code === 60 || // <
-        code === 62 || // >
-        code === 64 || // @
-        code === 44 || // ,
-        code === 59 || // ;
-        code === 58 || // :
-        code === 92 || // \
-        code === 47 || // /
-        code === 91 || // [
-        code === 93 || // ]
-        code === 63 || // ?
-        code === 61 || // =
-        code === 123 || // {
-        code === 125) {
+    function validateCookieName(name2) {
+      for (let i = 0; i < name2.length; ++i) {
+        const code2 = name2.charCodeAt(i);
+        if (code2 < 33 || // exclude CTLs (0-31), SP and HT
+        code2 > 126 || // exclude non-ascii and DEL
+        code2 === 34 || // "
+        code2 === 40 || // (
+        code2 === 41 || // )
+        code2 === 60 || // <
+        code2 === 62 || // >
+        code2 === 64 || // @
+        code2 === 44 || // ,
+        code2 === 59 || // ;
+        code2 === 58 || // :
+        code2 === 92 || // \
+        code2 === 47 || // /
+        code2 === 91 || // [
+        code2 === 93 || // ]
+        code2 === 63 || // ?
+        code2 === 61 || // =
+        code2 === 123 || // {
+        code2 === 125) {
           throw new Error("Invalid cookie name");
         }
       }
@@ -16008,31 +16008,31 @@ var require_util6 = __commonJS({
         ++i;
       }
       while (i < len) {
-        const code = value.charCodeAt(i++);
-        if (code < 33 || // exclude CTLs (0-31)
-        code > 126 || // non-ascii and DEL (127)
-        code === 34 || // "
-        code === 44 || // ,
-        code === 59 || // ;
-        code === 92) {
+        const code2 = value.charCodeAt(i++);
+        if (code2 < 33 || // exclude CTLs (0-31)
+        code2 > 126 || // non-ascii and DEL (127)
+        code2 === 34 || // "
+        code2 === 44 || // ,
+        code2 === 59 || // ;
+        code2 === 92) {
           throw new Error("Invalid cookie value");
         }
       }
     }
     function validateCookiePath(path) {
       for (let i = 0; i < path.length; ++i) {
-        const code = path.charCodeAt(i);
-        if (code < 32 || // exclude CTLs (0-31)
-        code > 126 || // exclude DEL and non-ascii
-        code === 59) {
+        const code2 = path.charCodeAt(i);
+        if (code2 < 32 || // exclude CTLs (0-31)
+        code2 > 126 || // exclude DEL and non-ascii
+        code2 === 59) {
           throw new Error("Invalid cookie path");
         }
       }
     }
-    function isLetterOrDigit(code) {
-      return code >= 48 && code <= 57 || // 0-9
-      code >= 65 && code <= 90 || // A-Z
-      code >= 97 && code <= 122;
+    function isLetterOrDigit(code2) {
+      return code2 >= 48 && code2 <= 57 || // 0-9
+      code2 >= 65 && code2 <= 90 || // A-Z
+      code2 >= 97 && code2 <= 122;
     }
     function validateCookieDomain(domain) {
       if (domain === " ") {
@@ -16043,8 +16043,8 @@ var require_util6 = __commonJS({
       }
       let labelLength = 0;
       for (let i = 0; i < domain.length; ++i) {
-        const code = domain.charCodeAt(i);
-        if (code === 46) {
+        const code2 = domain.charCodeAt(i);
+        if (code2 === 46) {
           if (labelLength === 0) {
             throw new Error("Invalid cookie domain");
           }
@@ -16054,10 +16054,10 @@ var require_util6 = __commonJS({
           labelLength = 0;
           continue;
         }
-        if (labelLength === 0 && !isLetterOrDigit(code)) {
+        if (labelLength === 0 && !isLetterOrDigit(code2)) {
           throw new Error("Invalid cookie domain");
         }
-        if (!isLetterOrDigit(code) && code !== 45) {
+        if (!isLetterOrDigit(code2) && code2 !== 45) {
           throw new Error("Invalid cookie domain");
         }
         if (++labelLength > 63) {
@@ -16180,7 +16180,7 @@ var require_parse = __commonJS({
       }
       let nameValuePair = "";
       let unparsedAttributes = "";
-      let name = "";
+      let name2 = "";
       let value = "";
       if (header.includes(";")) {
         const position = { position: 0 };
@@ -16193,20 +16193,20 @@ var require_parse = __commonJS({
         value = nameValuePair;
       } else {
         const position = { position: 0 };
-        name = collectASequenceOfCodePointsFast(
+        name2 = collectASequenceOfCodePointsFast(
           "=",
           nameValuePair,
           position
         );
         value = nameValuePair.slice(position.position + 1);
       }
-      name = name.trim();
+      name2 = name2.trim();
       value = value.trim();
-      if (name.length + value.length > maxNameValuePairSize) {
+      if (name2.length + value.length > maxNameValuePairSize) {
         return null;
       }
       return {
-        name,
+        name: name2,
         value,
         ...parseUnparsedAttributes(unparsedAttributes)
       };
@@ -16319,19 +16319,19 @@ var require_cookies = __commonJS({
         return out;
       }
       for (const piece of cookie.split(";")) {
-        const [name, ...value] = piece.split("=");
-        out[name.trim()] = value.join("=");
+        const [name2, ...value] = piece.split("=");
+        out[name2.trim()] = value.join("=");
       }
       return out;
     }
-    function deleteCookie(headers, name, attributes) {
+    function deleteCookie(headers, name2, attributes) {
       webidl.brandCheck(headers, Headers2, { strict: false });
       const prefix = "deleteCookie";
       webidl.argumentLengthCheck(arguments, 2, prefix);
-      name = webidl.converters.DOMString(name, prefix, "name");
+      name2 = webidl.converters.DOMString(name2, prefix, "name");
       attributes = webidl.converters.DeleteCookieAttributes(attributes);
       setCookie(headers, {
-        name,
+        name: name2,
         value: "",
         expires: /* @__PURE__ */ new Date(0),
         ...attributes
@@ -16831,37 +16831,37 @@ var require_util7 = __commonJS({
         return false;
       }
       for (let i = 0; i < protocol.length; ++i) {
-        const code = protocol.charCodeAt(i);
-        if (code < 33 || // CTL, contains SP (0x20) and HT (0x09)
-        code > 126 || code === 34 || // "
-        code === 40 || // (
-        code === 41 || // )
-        code === 44 || // ,
-        code === 47 || // /
-        code === 58 || // :
-        code === 59 || // ;
-        code === 60 || // <
-        code === 61 || // =
-        code === 62 || // >
-        code === 63 || // ?
-        code === 64 || // @
-        code === 91 || // [
-        code === 92 || // \
-        code === 93 || // ]
-        code === 123 || // {
-        code === 125) {
+        const code2 = protocol.charCodeAt(i);
+        if (code2 < 33 || // CTL, contains SP (0x20) and HT (0x09)
+        code2 > 126 || code2 === 34 || // "
+        code2 === 40 || // (
+        code2 === 41 || // )
+        code2 === 44 || // ,
+        code2 === 47 || // /
+        code2 === 58 || // :
+        code2 === 59 || // ;
+        code2 === 60 || // <
+        code2 === 61 || // =
+        code2 === 62 || // >
+        code2 === 63 || // ?
+        code2 === 64 || // @
+        code2 === 91 || // [
+        code2 === 92 || // \
+        code2 === 93 || // ]
+        code2 === 123 || // {
+        code2 === 125) {
           return false;
         }
       }
       return true;
     }
-    function isValidStatusCode(code) {
-      if (code >= 1e3 && code < 1015) {
-        return code !== 1004 && // reserved
-        code !== 1005 && // "MUST NOT be set as a status code"
-        code !== 1006;
+    function isValidStatusCode(code2) {
+      if (code2 >= 1e3 && code2 < 1015) {
+        return code2 !== 1004 && // reserved
+        code2 !== 1005 && // "MUST NOT be set as a status code"
+        code2 !== 1006;
       }
-      return code >= 3e3 && code <= 4999;
+      return code2 >= 3e3 && code2 <= 4999;
     }
     function failWebsocketConnection(ws, reason) {
       const { [kController]: controller, [kResponse]: response } = ws;
@@ -16893,9 +16893,9 @@ var require_util7 = __commonJS({
       const extensionList = /* @__PURE__ */ new Map();
       while (position.position < extensions.length) {
         const pair = collectASequenceOfCodePointsFast(";", extensions, position);
-        const [name, value = ""] = pair.split("=");
+        const [name2, value = ""] = pair.split("=");
         extensionList.set(
-          removeHTTPWhitespace(name, true, false),
+          removeHTTPWhitespace(name2, true, false),
           removeHTTPWhitespace(value, false, true)
         );
         position.position++;
@@ -17130,7 +17130,7 @@ var require_connection = __commonJS({
       });
       return controller;
     }
-    function closeWebSocketConnection(ws, code, reason, reasonByteLength) {
+    function closeWebSocketConnection(ws, code2, reason, reasonByteLength) {
       if (isClosing(ws) || isClosed(ws)) {
       } else if (!isEstablished(ws)) {
         failWebsocketConnection(ws, "Connection was closed before it was established.");
@@ -17138,12 +17138,12 @@ var require_connection = __commonJS({
       } else if (ws[kSentClose] === sentCloseFrameState.NOT_SENT) {
         ws[kSentClose] = sentCloseFrameState.PROCESSING;
         const frame = new WebsocketFrameSend();
-        if (code !== void 0 && reason === void 0) {
+        if (code2 !== void 0 && reason === void 0) {
           frame.frameData = Buffer.allocUnsafe(2);
-          frame.frameData.writeUInt16BE(code, 0);
-        } else if (code !== void 0 && reason !== void 0) {
+          frame.frameData.writeUInt16BE(code2, 0);
+        } else if (code2 !== void 0 && reason !== void 0) {
           frame.frameData = Buffer.allocUnsafe(2 + reasonByteLength);
-          frame.frameData.writeUInt16BE(code, 0);
+          frame.frameData.writeUInt16BE(code2, 0);
           frame.frameData.write(reason, 2, "utf-8");
         } else {
           frame.frameData = emptyBuffer;
@@ -17168,25 +17168,25 @@ var require_connection = __commonJS({
       response.socket.off("close", onSocketClose);
       response.socket.off("error", onSocketError);
       const wasClean = ws[kSentClose] === sentCloseFrameState.SENT && ws[kReceivedClose];
-      let code = 1005;
+      let code2 = 1005;
       let reason = "";
       const result = ws[kByteParser].closingInfo;
       if (result && !result.error) {
-        code = result.code ?? 1005;
+        code2 = result.code ?? 1005;
         reason = result.reason;
       } else if (!ws[kReceivedClose]) {
-        code = 1006;
+        code2 = 1006;
       }
       ws[kReadyState] = states.CLOSED;
       fireEvent("close", ws, (type, init) => new CloseEvent(type, init), {
         wasClean,
-        code,
+        code: code2,
         reason
       });
       if (channels.close.hasSubscribers) {
         channels.close.publish({
           websocket: ws,
-          code,
+          code: code2,
           reason
         });
       }
@@ -17310,8 +17310,8 @@ var require_receiver = __commonJS({
     var { closeWebSocketConnection } = require_connection();
     var { PerMessageDeflate } = require_permessage_deflate();
     var { MessageSizeExceededError } = require_errors();
-    function failWebsocketConnectionWithCode(ws, code, reason) {
-      closeWebSocketConnection(ws, code, reason, Buffer.byteLength(reason));
+    function failWebsocketConnectionWithCode(ws, code2, reason) {
+      closeWebSocketConnection(ws, code2, reason, Buffer.byteLength(reason));
       failWebsocketConnection(ws, reason);
     }
     var ByteParser = class extends Writable {
@@ -17488,8 +17488,8 @@ var require_receiver = __commonJS({
                   this.#info.fin,
                   (error2, data) => {
                     if (error2) {
-                      const code = error2 instanceof MessageSizeExceededError ? 1009 : 1007;
-                      failWebsocketConnectionWithCode(this.ws, code, error2.message);
+                      const code2 = error2 instanceof MessageSizeExceededError ? 1009 : 1007;
+                      failWebsocketConnectionWithCode(this.ws, code2, error2.message);
                       return;
                     }
                     if (!this.writeFragments(data)) {
@@ -17575,11 +17575,11 @@ var require_receiver = __commonJS({
       }
       parseCloseBody(data) {
         assert(data.length !== 1);
-        let code;
+        let code2;
         if (data.length >= 2) {
-          code = data.readUInt16BE(0);
+          code2 = data.readUInt16BE(0);
         }
-        if (code !== void 0 && !isValidStatusCode(code)) {
+        if (code2 !== void 0 && !isValidStatusCode(code2)) {
           return { code: 1002, reason: "Invalid status code", error: true };
         }
         let reason = data.subarray(2);
@@ -17591,7 +17591,7 @@ var require_receiver = __commonJS({
         } catch {
           return { code: 1007, reason: "Invalid UTF-8", error: true };
         }
-        return { code, reason, error: false };
+        return { code: code2, reason, error: false };
       }
       /**
        * Parses control frames.
@@ -17606,8 +17606,8 @@ var require_receiver = __commonJS({
           }
           this.#info.closeInfo = this.parseCloseBody(body);
           if (this.#info.closeInfo.error) {
-            const { code, reason } = this.#info.closeInfo;
-            closeWebSocketConnection(this.ws, code, reason, reason.length);
+            const { code: code2, reason } = this.#info.closeInfo;
+            closeWebSocketConnection(this.ws, code2, reason, reason.length);
             failWebsocketConnection(this.ws, reason);
             return false;
           }
@@ -17845,17 +17845,17 @@ var require_websocket = __commonJS({
        * @param {number|undefined} code
        * @param {string|undefined} reason
        */
-      close(code = void 0, reason = void 0) {
+      close(code2 = void 0, reason = void 0) {
         webidl.brandCheck(this, _WebSocket);
         const prefix = "WebSocket.close";
-        if (code !== void 0) {
-          code = webidl.converters["unsigned short"](code, prefix, "code", { clamp: true });
+        if (code2 !== void 0) {
+          code2 = webidl.converters["unsigned short"](code2, prefix, "code", { clamp: true });
         }
         if (reason !== void 0) {
           reason = webidl.converters.USVString(reason, prefix, "reason");
         }
-        if (code !== void 0) {
-          if (code !== 1e3 && (code < 3e3 || code > 4999)) {
+        if (code2 !== void 0) {
+          if (code2 !== 1e3 && (code2 < 3e3 || code2 > 4999)) {
             throw new DOMException("invalid code", "InvalidAccessError");
           }
         }
@@ -17869,7 +17869,7 @@ var require_websocket = __commonJS({
             );
           }
         }
-        closeWebSocketConnection(this, code, reason, reasonByteLength);
+        closeWebSocketConnection(this, code2, reason, reasonByteLength);
       }
       /**
        * @see https://websockets.spec.whatwg.org/#dom-websocket-send
@@ -18115,15 +18115,15 @@ var require_websocket = __commonJS({
     }
     function onParserError(err) {
       let message;
-      let code;
+      let code2;
       if (err instanceof CloseEvent) {
         message = err.reason;
-        code = err.code;
+        code2 = err.code;
       } else {
         message = err.message;
       }
       fireEvent("error", this, () => new ErrorEvent("error", { error: err, message }));
-      closeWebSocketConnection(this, code);
+      closeWebSocketConnection(this, code2);
     }
     module2.exports = {
       WebSocket
@@ -19630,8 +19630,8 @@ function issueCommand(command, properties, message) {
   const cmd = new Command(command, properties, message);
   process.stdout.write(cmd.toString() + os.EOL);
 }
-function issue(name, message = "") {
-  issueCommand(name, {}, message);
+function issue(name2, message = "") {
+  issueCommand(name2, {}, message);
 }
 var CMD_STRING = "::";
 var Command = class {
@@ -19914,9 +19914,9 @@ var Summary = class {
    *
    * @returns {Summary} summary instance
    */
-  addCodeBlock(code, lang) {
+  addCodeBlock(code2, lang) {
     const attrs = Object.assign({}, lang && { lang });
-    const element = this.wrap("pre", this.wrap("code", code), attrs);
+    const element = this.wrap("pre", this.wrap("code", code2), attrs);
     return this.addRaw(element).addEOL();
   }
   /**
@@ -19941,12 +19941,12 @@ var Summary = class {
    * @returns {Summary} summary instance
    */
   addTable(rows) {
-    const tableBody = rows.map((row) => {
-      const cells = row.map((cell) => {
-        if (typeof cell === "string") {
-          return this.wrap("td", cell);
+    const tableBody = rows.map((row2) => {
+      const cells = row2.map((cell2) => {
+        if (typeof cell2 === "string") {
+          return this.wrap("td", cell2);
         }
-        const { header, data, colspan, rowspan } = cell;
+        const { header, data, colspan, rowspan } = cell2;
         const tag = header ? "th" : "td";
         const attrs = Object.assign(Object.assign({}, colspan && { colspan }), rowspan && { rowspan });
         return this.wrap(tag, data, attrs);
@@ -20093,34 +20093,34 @@ var ExitCode;
   ExitCode2[ExitCode2["Success"] = 0] = "Success";
   ExitCode2[ExitCode2["Failure"] = 1] = "Failure";
 })(ExitCode || (ExitCode = {}));
-function getInput(name, options) {
-  const val = process.env[`INPUT_${name.replace(/ /g, "_").toUpperCase()}`] || "";
+function getInput(name2, options) {
+  const val = process.env[`INPUT_${name2.replace(/ /g, "_").toUpperCase()}`] || "";
   if (options && options.required && !val) {
-    throw new Error(`Input required and not supplied: ${name}`);
+    throw new Error(`Input required and not supplied: ${name2}`);
   }
   if (options && options.trimWhitespace === false) {
     return val;
   }
   return val.trim();
 }
-function getBooleanInput(name, options) {
+function getBooleanInput(name2, options) {
   const trueValue = ["true", "True", "TRUE"];
   const falseValue = ["false", "False", "FALSE"];
-  const val = getInput(name, options);
+  const val = getInput(name2, options);
   if (trueValue.includes(val))
     return true;
   if (falseValue.includes(val))
     return false;
-  throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}
+  throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name2}
 Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 }
-function setOutput(name, value) {
+function setOutput(name2, value) {
   const filePath = process.env["GITHUB_OUTPUT"] || "";
   if (filePath) {
-    return issueFileCommand("OUTPUT", prepareKeyValueMessage(name, value));
+    return issueFileCommand("OUTPUT", prepareKeyValueMessage(name2, value));
   }
   process.stdout.write(os4.EOL);
-  issueCommand("set-output", { name }, toCommandValue(value));
+  issueCommand("set-output", { name: name2 }, toCommandValue(value));
 }
 function setFailed(message) {
   process.exitCode = ExitCode.Failure;
@@ -20135,15 +20135,15 @@ function notice(message, properties = {}) {
 function info(message) {
   process.stdout.write(message + os4.EOL);
 }
-function startGroup(name) {
-  issue("group", name);
+function startGroup(name2) {
+  issue("group", name2);
 }
 function endGroup() {
   issue("endgroup");
 }
-function group(name, fn) {
+function group(name2, fn) {
   return __awaiter2(this, void 0, void 0, function* () {
-    startGroup(name);
+    startGroup(name2);
     let result;
     try {
       result = yield fn();
@@ -20287,33 +20287,33 @@ function getUserAgent() {
 }
 
 // node_modules/before-after-hook/lib/register.js
-function register(state, name, method, options) {
+function register(state, name2, method, options) {
   if (typeof method !== "function") {
     throw new Error("method for before hook must be a function");
   }
   if (!options) {
     options = {};
   }
-  if (Array.isArray(name)) {
-    return name.reverse().reduce((callback, name2) => {
-      return register.bind(null, state, name2, callback, options);
+  if (Array.isArray(name2)) {
+    return name2.reverse().reduce((callback, name3) => {
+      return register.bind(null, state, name3, callback, options);
     }, method)();
   }
   return Promise.resolve().then(() => {
-    if (!state.registry[name]) {
+    if (!state.registry[name2]) {
       return method(options);
     }
-    return state.registry[name].reduce((method2, registered) => {
+    return state.registry[name2].reduce((method2, registered) => {
       return registered.hook.bind(null, method2, options);
     }, method)();
   });
 }
 
 // node_modules/before-after-hook/lib/add.js
-function addHook(state, kind, name, hook2) {
+function addHook(state, kind, name2, hook2) {
   const orig = hook2;
-  if (!state.registry[name]) {
-    state.registry[name] = [];
+  if (!state.registry[name2]) {
+    state.registry[name2] = [];
   }
   if (kind === "before") {
     hook2 = (method, options) => {
@@ -20338,38 +20338,38 @@ function addHook(state, kind, name, hook2) {
       });
     };
   }
-  state.registry[name].push({
+  state.registry[name2].push({
     hook: hook2,
     orig
   });
 }
 
 // node_modules/before-after-hook/lib/remove.js
-function removeHook(state, name, method) {
-  if (!state.registry[name]) {
+function removeHook(state, name2, method) {
+  if (!state.registry[name2]) {
     return;
   }
-  const index = state.registry[name].map((registered) => {
+  const index = state.registry[name2].map((registered) => {
     return registered.orig;
   }).indexOf(method);
   if (index === -1) {
     return;
   }
-  state.registry[name].splice(index, 1);
+  state.registry[name2].splice(index, 1);
 }
 
 // node_modules/before-after-hook/index.js
 var bind = Function.bind;
 var bindable = bind.bind(bind);
-function bindApi(hook2, state, name) {
+function bindApi(hook2, state, name2) {
   const removeHookRef = bindable(removeHook, null).apply(
     null,
-    name ? [state, name] : [state]
+    name2 ? [state, name2] : [state]
   );
   hook2.api = { remove: removeHookRef };
   hook2.remove = removeHookRef;
   ["before", "error", "after", "wrap"].forEach((kind) => {
-    const args = name ? [state, kind, name] : [state, kind];
+    const args = name2 ? [state, kind, name2] : [state, kind];
     hook2[kind] = hook2.api[kind] = bindable(addHook, null).apply(null, args);
   });
 }
@@ -20470,11 +20470,11 @@ function addQueryParameters(url, parameters) {
   if (names.length === 0) {
     return url;
   }
-  return url + separator + names.map((name) => {
-    if (name === "q") {
+  return url + separator + names.map((name2) => {
+    if (name2 === "q") {
       return "q=" + parameters.q.split("+").map(encodeURIComponent).join("+");
     }
-    return `${name}=${encodeURIComponent(parameters[name])}`;
+    return `${name2}=${encodeURIComponent(parameters[name2])}`;
   }).join("&");
 }
 var urlVariableRegex = /\{[^{}}]+\}/g;
@@ -20740,12 +20740,12 @@ function parseParameters(header, type, index, len, stopChar) {
     index = skipOWS(header, index + 1, len);
     const keyStart = index;
     while (index < len) {
-      const code = header.charCodeAt(index);
-      if (code === stopChar)
+      const code2 = header.charCodeAt(index);
+      if (code2 === stopChar)
         break parameter;
-      if (code === SEMI)
+      if (code2 === SEMI)
         continue parameter;
-      if (code === EQ) {
+      if (code2 === EQ) {
         const keyEnd = trailingOWS(header, keyStart, index);
         const key = header.slice(keyStart, keyEnd).toLowerCase();
         index = skipOWS(header, index + 1, len);
@@ -20753,18 +20753,18 @@ function parseParameters(header, type, index, len, stopChar) {
           index++;
           let value = "";
           while (index < len) {
-            const code2 = header.charCodeAt(index++);
-            if (code2 === DQUOTE) {
+            const code3 = header.charCodeAt(index++);
+            if (code3 === DQUOTE) {
               index = skipValue(header, index, len, stopChar);
               if (parameters[key] === void 0)
                 parameters[key] = value;
               break;
             }
-            if (code2 === BSLASH && index < len) {
+            if (code3 === BSLASH && index < len) {
               value += header[index++];
               continue;
             }
-            value += String.fromCharCode(code2);
+            value += String.fromCharCode(code3);
           }
           continue parameter;
         }
@@ -20783,8 +20783,8 @@ function parseParameters(header, type, index, len, stopChar) {
 }
 function skipValue(str, index, len, stopChar) {
   while (index < len) {
-    const code = str.charCodeAt(index);
-    if (code === SEMI || code === stopChar)
+    const code2 = str.charCodeAt(index);
+    if (code2 === SEMI || code2 === stopChar)
       break;
     index++;
   }
@@ -21210,8 +21210,8 @@ async function fetchWrapper(requestOptions) {
   const parseSuccessResponseBody = requestOptions.request?.parseSuccessResponseBody !== false;
   const body = isPlainObject2(requestOptions.body) || Array.isArray(requestOptions.body) ? JSONStringify(requestOptions.body) : requestOptions.body;
   const requestHeaders = Object.fromEntries(
-    Object.entries(requestOptions.headers).map(([name, value]) => [
-      name,
+    Object.entries(requestOptions.headers).map(([name2, value]) => [
+      name2,
       String(value)
     ])
   );
@@ -24055,17 +24055,17 @@ function decorate(octokit, scope, methodName, defaults2, decorations) {
     }
     if (decorations.renamedParameters) {
       const options2 = requestWithDefaults.endpoint.merge(...args);
-      for (const [name, alias] of Object.entries(
+      for (const [name2, alias] of Object.entries(
         decorations.renamedParameters
       )) {
-        if (name in options2) {
+        if (name2 in options2) {
           octokit.log.warn(
-            `"${name}" parameter is deprecated for "octokit.${scope}.${methodName}()". Use "${alias}" instead`
+            `"${name2}" parameter is deprecated for "octokit.${scope}.${methodName}()". Use "${alias}" instead`
           );
           if (!(alias in options2)) {
-            options2[alias] = options2[name];
+            options2[alias] = options2[name2];
           }
-          delete options2[name];
+          delete options2[name2];
         }
       }
       return requestWithDefaults(options2);
@@ -25675,10 +25675,10 @@ function constructFromEvents(events, options) {
       }
       case EVENT_ID.ALIAS: {
         if (state.maxAliases !== -1 && ++state.aliasCount > state.maxAliases) throwError$1(state, `aliases exceeded maxAliases (${state.maxAliases})`);
-        const name = state.source.slice(event.anchorStart, event.anchorEnd);
-        const anchor = state.anchors.get(name);
-        if (!anchor) throwError$1(state, `unidentified alias "${name}"`);
-        if (!anchor.isValueFinal) throwError$1(state, `recursive alias "${name}" is not supported for tag ${anchor.tag.tagName} because it uses finalize()`);
+        const name2 = state.source.slice(event.anchorStart, event.anchorEnd);
+        const anchor = state.anchors.get(name2);
+        if (!anchor) throwError$1(state, `unidentified alias "${name2}"`);
+        if (!anchor.isValueFinal) throwError$1(state, `recursive alias "${name2}" is not supported for tag ${anchor.tag.tagName} because it uses finalize()`);
         addValue(state, anchor.value, anchor.tag);
         break;
       }
@@ -26431,9 +26431,9 @@ function readDirective(state) {
   state.position++;
   const nameStart = state.position;
   while (state.input.charCodeAt(state.position) !== 0 && !isWsOrEol(state.input.charCodeAt(state.position))) state.position++;
-  const name = state.input.slice(nameStart, state.position);
+  const name2 = state.input.slice(nameStart, state.position);
   const args = [];
-  if (name.length === 0) throwError(state, "directive name must not be less than one character in length");
+  if (name2.length === 0) throwError(state, "directive name must not be less than one character in length");
   while (state.input.charCodeAt(state.position) !== 0 && !isEol(state.input.charCodeAt(state.position))) {
     while (isWhiteSpace(state.input.charCodeAt(state.position))) state.position++;
     if (state.input.charCodeAt(state.position) === 35 || isEol(state.input.charCodeAt(state.position)) || state.input.charCodeAt(state.position) === 0) break;
@@ -26442,7 +26442,7 @@ function readDirective(state) {
     args.push(state.input.slice(start, state.position));
   }
   if (isEol(state.input.charCodeAt(state.position))) consumeLineBreak(state);
-  if (name === "YAML") {
+  if (name2 === "YAML") {
     if (state.directives.some((directive) => directive.kind === "yaml")) throwError(state, "duplication of %YAML directive");
     if (args.length !== 1) throwError(state, "YAML directive accepts exactly one argument");
     const match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]);
@@ -26452,7 +26452,7 @@ function readDirective(state) {
       kind: "yaml",
       version: args[0]
     });
-  } else if (name === "TAG") {
+  } else if (name2 === "TAG") {
     if (args.length !== 2) throwError(state, "TAG directive accepts exactly two arguments");
     const [handle, prefix] = args;
     if (!PATTERN_TAG_HANDLE.test(handle)) throwError(state, "ill-formed tag handle (first argument) of the TAG directive");
@@ -26671,7 +26671,7 @@ var DEFAULT_PRESENTER_OPTIONS = {
   quoteFlowKeys: false,
   quoteStyle: "single",
   forceQuotes: false,
-  scalarStyleRules: Object.keys(DEFAULT_SCALAR_STYLE_RULES).map((name) => Reflect.get(DEFAULT_SCALAR_STYLE_RULES, name)),
+  scalarStyleRules: Object.keys(DEFAULT_SCALAR_STYLE_RULES).map((name2) => Reflect.get(DEFAULT_SCALAR_STYLE_RULES, name2)),
   tagBeforeAnchor: false
 };
 var DEFAULT_DUMP_OPTIONS = {
@@ -26703,7 +26703,9 @@ var CHOMPING_KEEP = CHOMPING_MODE.KEEP;
 
 // src/config.ts
 var COLOR_PATTERN = /^[0-9a-f]{6}$/i;
+var MAX_CONFIG_DEPTH = 10;
 var MAX_CONFIG_SIZE = 5 * 1024 * 1024;
+var CONFIG_TIMEOUT_MS = 15e3;
 function asRecord(value, location) {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error(`${location} must be an object`);
@@ -26714,13 +26716,56 @@ function validateName(value, location) {
   if (typeof value !== "string") {
     throw new Error(`${location} must be a string`);
   }
-  const name = value.trim();
-  if (name.length < 1 || name.length > 50) {
+  const name2 = value.trim();
+  if (name2.length < 1 || name2.length > 50) {
     throw new Error(`${location} must contain between 1 and 50 characters`);
   }
-  return name;
+  return name2;
 }
-function validateLabel(value, index) {
+function validateColor(value, location) {
+  if (typeof value !== "string") {
+    throw new Error(`${location} must be a string`);
+  }
+  const color2 = value.trim().replace(/^#/, "").toLowerCase();
+  if (!COLOR_PATTERN.test(color2)) {
+    throw new Error(`${location} must be a six-digit hexadecimal color`);
+  }
+  return color2;
+}
+function validateDescription(value, location) {
+  if (value === void 0 || value === null) {
+    return null;
+  }
+  if (typeof value !== "string") {
+    throw new Error(`${location} must be a string or null`);
+  }
+  const description2 = value.trim();
+  if (description2.length > 100) {
+    throw new Error(`${location} cannot exceed 100 characters`);
+  }
+  return description2 || null;
+}
+function validateAliases(value, labelName, location) {
+  if (!Array.isArray(value)) {
+    throw new Error(`${location} must be an array of strings`);
+  }
+  const aliases = value.map(
+    (alias, index) => validateName(alias, `${location}[${index}]`)
+  );
+  const uniqueAliases = /* @__PURE__ */ new Map();
+  for (const alias of aliases) {
+    const key = alias.toLocaleLowerCase("en-US");
+    if (key === labelName.toLocaleLowerCase("en-US")) {
+      throw new Error(`${location} cannot contain its own label name`);
+    }
+    if (uniqueAliases.has(key)) {
+      throw new Error(`${location} contains duplicate alias: ${alias}`);
+    }
+    uniqueAliases.set(key, alias);
+  }
+  return [...uniqueAliases.values()];
+}
+function validatePartialLabel(value, index) {
   const location = `labels[${index}]`;
   const label = asRecord(value, location);
   const allowed = /* @__PURE__ */ new Set(["name", "color", "description", "aliases"]);
@@ -26730,48 +26775,42 @@ function validateLabel(value, index) {
       `${location} contains unknown field(s): ${unexpected.join(", ")}`
     );
   }
-  const name = validateName(label.name, `${location}.name`);
-  if (typeof label.color !== "string") {
-    throw new Error(`${location}.color must be a string`);
+  const name2 = validateName(label.name, `${location}.name`);
+  const result = { name: name2 };
+  if (Object.hasOwn(label, "color")) {
+    result.color = validateColor(label.color, `${location}.color`);
   }
-  const color = label.color.trim().replace(/^#/, "").toLowerCase();
-  if (!COLOR_PATTERN.test(color)) {
-    throw new Error(`${location}.color must be a six-digit hexadecimal color`);
-  }
-  let description = null;
-  if (label.description !== void 0 && label.description !== null) {
-    if (typeof label.description !== "string") {
-      throw new Error(`${location}.description must be a string or null`);
-    }
-    const normalizedDescription = label.description.trim();
-    if (normalizedDescription.length > 100) {
-      throw new Error(`${location}.description cannot exceed 100 characters`);
-    }
-    description = normalizedDescription || null;
-  }
-  let aliases = [];
-  if (label.aliases !== void 0) {
-    if (!Array.isArray(label.aliases)) {
-      throw new Error(`${location}.aliases must be an array of strings`);
-    }
-    aliases = label.aliases.map(
-      (alias, aliasIndex) => validateName(alias, `${location}.aliases[${aliasIndex}]`)
+  if (Object.hasOwn(label, "description")) {
+    result.description = validateDescription(
+      label.description,
+      `${location}.description`
     );
   }
-  const uniqueAliases = /* @__PURE__ */ new Map();
-  for (const alias of aliases) {
-    const key = alias.toLocaleLowerCase("en-US");
-    if (key === name.toLocaleLowerCase("en-US")) {
-      throw new Error(`${location}.aliases cannot contain its own label name`);
-    }
-    if (uniqueAliases.has(key)) {
-      throw new Error(`${location}.aliases contains duplicate alias: ${alias}`);
-    }
-    uniqueAliases.set(key, alias);
+  if (Object.hasOwn(label, "aliases")) {
+    result.aliases = validateAliases(
+      label.aliases,
+      name2,
+      `${location}.aliases`
+    );
   }
-  return { name, color, description, aliases: [...uniqueAliases.values()] };
+  return result;
 }
-function parseLabelConfig(content) {
+function parseExtends(value) {
+  if (value === void 0) {
+    return [];
+  }
+  const sources = typeof value === "string" ? [value] : value;
+  if (!Array.isArray(sources)) {
+    throw new Error("configuration.extends must be a string or array of strings");
+  }
+  return sources.map((source, index) => {
+    if (typeof source !== "string" || source.trim() === "") {
+      throw new Error(`configuration.extends[${index}] must be a non-empty string`);
+    }
+    return source.trim();
+  });
+}
+function parseBlueprint(content) {
   let parsed;
   try {
     parsed = load(content);
@@ -26780,20 +26819,46 @@ function parseLabelConfig(content) {
       `Unable to parse label configuration: ${error2.message}`
     );
   }
-  const values = Array.isArray(parsed) ? parsed : asRecord(parsed, "configuration").labels;
-  if (!Array.isArray(values) || values.length === 0) {
-    throw new Error("configuration must contain a non-empty labels array");
+  const configuration = Array.isArray(parsed) ? { labels: parsed } : asRecord(parsed, "configuration");
+  const rawLabels = configuration.labels ?? [];
+  if (!Array.isArray(rawLabels)) {
+    throw new Error("configuration.labels must be an array");
   }
-  const labels = values.map(validateLabel);
-  const desiredNames = /* @__PURE__ */ new Map();
-  const aliases = /* @__PURE__ */ new Map();
+  const labels = rawLabels.map(validatePartialLabel);
+  const names = /* @__PURE__ */ new Map();
   for (const label of labels) {
-    const nameKey = label.name.toLocaleLowerCase("en-US");
-    const duplicate = desiredNames.get(nameKey);
+    const key = label.name.toLocaleLowerCase("en-US");
+    const duplicate = names.get(key);
     if (duplicate) {
       throw new Error(`duplicate label names: ${duplicate} and ${label.name}`);
     }
-    desiredNames.set(nameKey, label.name);
+    names.set(key, label.name);
+  }
+  return {
+    extends: parseExtends(configuration.extends),
+    labels
+  };
+}
+function validateMergedLabels(values) {
+  if (values.length === 0) {
+    throw new Error("configuration must contain a non-empty labels array");
+  }
+  const labels = values.map((label, index) => {
+    const location = `labels[${index}]`;
+    if (label.color === void 0) {
+      throw new Error(`${location}.color must be a string`);
+    }
+    return {
+      name: label.name,
+      color: label.color,
+      description: label.description ?? null,
+      aliases: label.aliases ?? []
+    };
+  });
+  const desiredNames = /* @__PURE__ */ new Map();
+  const aliases = /* @__PURE__ */ new Map();
+  for (const label of labels) {
+    desiredNames.set(label.name.toLocaleLowerCase("en-US"), label.name);
   }
   for (const label of labels) {
     for (const alias of label.aliases) {
@@ -26815,33 +26880,118 @@ function parseLabelConfig(content) {
   }
   return labels;
 }
-async function readRemoteConfig(source) {
-  const response = await fetch(source, {
+function sourceFrom(location, importer) {
+  if (/^https?:\/\//i.test(location)) {
+    return { location: new URL(location).toString(), remote: true };
+  }
+  if (importer?.remote) {
+    const url = new URL(location, importer.location);
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error(`Unsupported configuration URL: ${url.toString()}`);
+    }
+    return { location: url.toString(), remote: true };
+  }
+  return {
+    location: (0, import_node_path.resolve)(importer ? (0, import_node_path.dirname)(importer.location) : process.cwd(), location),
+    remote: false
+  };
+}
+function accountForSize(context3, content) {
+  context3.loadedBytes += Buffer.byteLength(content);
+  if (context3.loadedBytes > MAX_CONFIG_SIZE) {
+    throw new Error(
+      `Combined configuration exceeds the ${MAX_CONFIG_SIZE} byte limit`
+    );
+  }
+}
+async function readRemoteConfig(source, context3) {
+  const response = await fetch(source.location, {
     headers: {
       accept: "application/json, application/yaml, text/yaml, text/plain"
     },
-    signal: AbortSignal.timeout(15e3)
+    signal: context3.signal
   });
   if (!response.ok) {
-    throw new Error(`Unable to fetch ${source}: HTTP ${response.status}`);
+    throw new Error(`Unable to fetch ${source.location}: HTTP ${response.status}`);
   }
   const contentLength = Number(response.headers.get("content-length") ?? 0);
-  if (contentLength > MAX_CONFIG_SIZE) {
-    throw new Error(`Configuration exceeds the ${MAX_CONFIG_SIZE} byte limit`);
+  if (Number.isFinite(contentLength) && context3.loadedBytes + contentLength > MAX_CONFIG_SIZE) {
+    throw new Error(
+      `Combined configuration exceeds the ${MAX_CONFIG_SIZE} byte limit`
+    );
   }
-  const content = await response.text();
-  if (Buffer.byteLength(content) > MAX_CONFIG_SIZE) {
-    throw new Error(`Configuration exceeds the ${MAX_CONFIG_SIZE} byte limit`);
+  return response.text();
+}
+async function readConfig(source, context3) {
+  try {
+    const content = source.remote ? await readRemoteConfig(source, context3) : await (0, import_promises.readFile)(source.location, {
+      encoding: "utf8",
+      signal: context3.signal
+    });
+    accountForSize(context3, content);
+    return content;
+  } catch (error2) {
+    if (context3.signal.aborted) {
+      throw new Error(
+        `Configuration loading exceeded the ${CONFIG_TIMEOUT_MS / 1e3} second timeout`
+      );
+    }
+    throw error2;
   }
-  return content;
+}
+function mergeLabels(target, labels) {
+  for (const label of labels) {
+    const key = label.name.toLocaleLowerCase("en-US");
+    target.set(key, { ...target.get(key), ...label });
+  }
+}
+async function loadBlueprint(source, context3, chain) {
+  if (chain.includes(source.location)) {
+    throw new Error(
+      `Configuration cycle detected: ${[...chain, source.location].join(" -> ")}`
+    );
+  }
+  if (chain.length >= MAX_CONFIG_DEPTH) {
+    throw new Error(
+      `Configuration extends depth exceeds ${MAX_CONFIG_DEPTH}: ${[...chain, source.location].join(" -> ")}`
+    );
+  }
+  const cached = context3.cache.get(source.location);
+  if (cached) {
+    return cached;
+  }
+  const content = await readConfig(source, context3);
+  const blueprint = parseBlueprint(content);
+  const merged = /* @__PURE__ */ new Map();
+  const nextChain = [...chain, source.location];
+  for (const importedLocation of blueprint.extends) {
+    mergeLabels(
+      merged,
+      await loadBlueprint(
+        sourceFrom(importedLocation, source),
+        context3,
+        nextChain
+      )
+    );
+  }
+  mergeLabels(merged, blueprint.labels);
+  const labels = [...merged.values()];
+  context3.cache.set(source.location, labels);
+  return labels;
 }
 async function loadLabelConfig(source) {
   const location = source.trim();
   if (!location) {
     throw new Error("labels-file cannot be empty");
   }
-  const content = /^https?:\/\//i.test(location) ? await readRemoteConfig(location) : await (0, import_promises.readFile)((0, import_node_path.resolve)(process.cwd(), location), "utf8");
-  return parseLabelConfig(content);
+  const context3 = {
+    signal: AbortSignal.timeout(CONFIG_TIMEOUT_MS),
+    loadedBytes: 0,
+    cache: /* @__PURE__ */ new Map()
+  };
+  return validateMergedLabels(
+    await loadBlueprint(sourceFrom(location), context3, [])
+  );
 }
 
 // src/github.ts
@@ -26881,13 +27031,22 @@ function createLabelApi(client) {
         description: label.description ?? ""
       });
     },
-    async remove(owner, repo, name) {
-      await client.rest.issues.deleteLabel({ owner, repo, name });
+    async remove(owner, repo, name2) {
+      await client.rest.issues.deleteLabel({ owner, repo, name: name2 });
     }
   };
 }
 
 // src/inputs.ts
+function parseMode(value, legacyDryRun) {
+  const mode = value.trim().toLowerCase() || "sync";
+  if (mode !== "sync" && mode !== "preview" && mode !== "check") {
+    throw new Error(
+      `Invalid mode "${mode}": expected sync, preview, or check`
+    );
+  }
+  return legacyDryRun && mode === "sync" ? "preview" : mode;
+}
 function parseRepositories(value, defaultRepository) {
   const candidates = (value.trim() || defaultRepository).split(/[\n,]+/).map((repository) => repository.trim()).filter(Boolean);
   if (candidates.length === 0) {
@@ -26904,7 +27063,15 @@ function parseRepositories(value, defaultRepository) {
   }
   return [...repositories.values()];
 }
+function parsePruneIgnore(value) {
+  const patterns = /* @__PURE__ */ new Map();
+  for (const pattern of value.split(/[\n,]+/).map((candidate) => candidate.trim()).filter(Boolean)) {
+    patterns.set(pattern.toLocaleLowerCase("en-US"), pattern);
+  }
+  return [...patterns.values()];
+}
 function getInputs(defaultRepository) {
+  const legacyDryRun = getBooleanInput("dry-run");
   return {
     token: getInput("github-token", { required: true }),
     labelsFile: getInput("labels-file", { required: true }),
@@ -26913,21 +27080,126 @@ function getInputs(defaultRepository) {
       defaultRepository
     ),
     prune: getBooleanInput("prune"),
-    dryRun: getBooleanInput("dry-run")
+    pruneIgnore: parsePruneIgnore(getInput("prune-ignore")),
+    mode: parseMode(getInput("mode"), legacyDryRun)
+  };
+}
+
+// src/summary.ts
+var MAX_DETAILED_CHANGES = 100;
+var ABSENT = "<em>absent</em>";
+var NONE = "<em>none</em>";
+var UNCHANGED = "\u2014";
+function escapeHtml(value) {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
+function renderIgnoredLabels(names) {
+  return `<ul>${names.map((value) => `<li>${name(value)}</li>`).join("")}</ul>`;
+}
+function code(value) {
+  return `<code>${escapeHtml(value)}</code>`;
+}
+function name(value) {
+  return code(value);
+}
+function color(value) {
+  return code(`#${value.toLowerCase()}`);
+}
+function description(value) {
+  return value === null ? NONE : code(value);
+}
+function transition(before, after) {
+  return `${before} \u2192 ${after}`;
+}
+function updateTransition(before, after, render) {
+  return before === after ? UNCHANGED : transition(render(before), render(after));
+}
+function renderChange(change) {
+  if (change.kind === "create") {
+    return [
+      "Create",
+      transition(ABSENT, name(change.label.name)),
+      transition(ABSENT, color(change.label.color)),
+      transition(ABSENT, description(change.label.description))
+    ];
+  }
+  if (change.kind === "delete") {
+    return [
+      "Delete",
+      transition(name(change.current.name), ABSENT),
+      transition(color(change.current.color), ABSENT),
+      transition(description(change.current.description), ABSENT)
+    ];
+  }
+  const renamed = change.current.name !== change.label.name;
+  return [
+    renamed ? "Rename" : "Update",
+    renamed ? transition(name(change.current.name), name(change.label.name)) : UNCHANGED,
+    updateTransition(
+      change.current.color.toLowerCase(),
+      change.label.color.toLowerCase(),
+      color
+    ),
+    updateTransition(
+      change.current.description,
+      change.label.description,
+      description
+    )
+  ];
+}
+function cell(tag, value) {
+  return `<${tag}>${value}</${tag}>`;
+}
+function row(values, header = false) {
+  const tag = header ? "th" : "td";
+  return `<tr>${values.map((value) => cell(tag, value)).join("")}</tr>`;
+}
+function renderChangeTable(changes, limit = MAX_DETAILED_CHANGES) {
+  const changed = changes.filter(
+    (change) => change.kind !== "unchanged"
+  );
+  const visible = changed.slice(0, Math.max(0, limit));
+  const rows = visible.map(renderChange);
+  const truncated = visible.length < changed.length;
+  const notice2 = truncated ? `<p><strong>Showing the first ${visible.length} of ${changed.length} changes.</strong></p>` : "";
+  return {
+    html: notice2 + `<table>${row(["Operation", "Name", "Color", "Description"], true)}${rows.map((values) => row(values)).join("")}</table>`,
+    shown: visible.length,
+    total: changed.length,
+    truncated
   };
 }
 
 // src/sync.ts
 var keyOf = (value) => value.toLocaleLowerCase("en-US");
+function globPattern(pattern) {
+  let source = "^";
+  for (const character of pattern) {
+    if (character === "*") {
+      source += ".*";
+    } else if (character === "?") {
+      source += ".";
+    } else {
+      source += character.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+    }
+  }
+  return new RegExp(`${source}$`, "iu");
+}
+function createPruneIgnoreMatcher(patterns) {
+  const compiled = patterns.map(globPattern);
+  return (labelName) => compiled.some((pattern) => pattern.test(labelName));
+}
 function hasMetadataChanged(current, desired) {
   return current.name !== desired.name || current.color.toLowerCase() !== desired.color || (current.description ?? "") !== (desired.description ?? "");
 }
-function planLabelChanges(current, desired, prune) {
+function planLabelChanges(current, desired, prune, pruneIgnore = []) {
   const currentByName = new Map(
     current.map((label) => [keyOf(label.name), label])
   );
   const claimed = /* @__PURE__ */ new Set();
   const changes = [];
+  const ignored = [];
+  const isIgnored = createPruneIgnoreMatcher(pruneIgnore);
   for (const label of desired) {
     const exact = currentByName.get(keyOf(label.name));
     const aliasMatches = label.aliases.map((alias) => currentByName.get(keyOf(alias))).filter(
@@ -26954,20 +27226,25 @@ function planLabelChanges(current, desired, prune) {
         kind: "update",
         name: label.name,
         previousName: matched.name,
+        current: matched,
         label
       });
     } else {
-      changes.push({ kind: "unchanged", name: label.name });
+      changes.push({ kind: "unchanged", name: label.name, current: matched });
     }
   }
   if (prune) {
     for (const label of current) {
       if (!claimed.has(keyOf(label.name))) {
-        changes.push({ kind: "delete", name: label.name });
+        if (isIgnored(label.name)) {
+          ignored.push(label);
+        } else {
+          changes.push({ kind: "delete", name: label.name, current: label });
+        }
       }
     }
   }
-  return changes;
+  return { changes, ignored };
 }
 async function syncRepository(api, repository, desired, options) {
   const [owner, repo] = repository.split("/");
@@ -26975,12 +27252,17 @@ async function syncRepository(api, repository, desired, options) {
     throw new Error(`Invalid repository: ${repository}`);
   }
   const current = await api.list(owner, repo);
-  const changes = planLabelChanges(current, desired, options.prune);
+  const { changes, ignored } = planLabelChanges(
+    current,
+    desired,
+    options.prune,
+    options.pruneIgnore
+  );
   if (!options.dryRun) {
     for (const change of changes) {
-      if (change.kind === "create" && change.label) {
+      if (change.kind === "create") {
         await api.create(owner, repo, change.label);
-      } else if (change.kind === "update" && change.label && change.previousName) {
+      } else if (change.kind === "update") {
         await api.update(owner, repo, change.previousName, change.label);
       }
     }
@@ -26993,6 +27275,7 @@ async function syncRepository(api, repository, desired, options) {
   const count = (kind) => changes.filter((change) => change.kind === kind).length;
   return {
     changes,
+    ignored,
     result: {
       repository,
       created: count("create"),
@@ -27017,27 +27300,42 @@ function total(results, key) {
     return sum + (typeof value === "number" ? value : 0);
   }, 0);
 }
+function formatCount(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
 async function run() {
   try {
     const defaultRepository = process.env.GITHUB_REPOSITORY ?? "";
     const inputs = getInputs(defaultRepository);
     const labels = await loadLabelConfig(inputs.labelsFile);
     const api = createLabelApi(getOctokit(inputs.token));
-    const results = [];
+    const dryRun = inputs.mode !== "sync";
+    const syncs = [];
     const failures = [];
     info(
       `Loaded ${labels.length} labels for ${inputs.repositories.length} repository target(s)`
     );
-    if (inputs.dryRun) {
-      notice("Dry-run enabled: no labels will be modified");
+    if (inputs.mode === "preview") {
+      notice("Preview mode enabled: no labels will be modified");
+    } else if (inputs.mode === "check") {
+      notice(
+        "Check mode enabled: no labels will be modified and drift will fail the run"
+      );
     }
     for (const repository of inputs.repositories) {
       await group(`Synchronizing ${repository}`, async () => {
         try {
-          const sync = await syncRepository(api, repository, labels, inputs);
-          results.push(sync.result);
+          const sync = await syncRepository(api, repository, labels, {
+            prune: inputs.prune,
+            pruneIgnore: inputs.pruneIgnore,
+            dryRun
+          });
+          syncs.push(sync);
           for (const change of sync.changes) {
             info(describeChange(change));
+          }
+          for (const label of sync.ignored ?? []) {
+            info(`ignore ${label.name} (matched prune-ignore)`);
           }
         } catch (error2) {
           const message = `${repository}: ${error2.message}`;
@@ -27046,6 +27344,7 @@ async function run() {
         }
       });
     }
+    const results = syncs.map((sync) => sync.result);
     const created = total(results, "created");
     const updated = total(results, "updated");
     const deleted = total(results, "deleted");
@@ -27056,7 +27355,9 @@ async function run() {
     setOutput("deleted", deleted);
     setOutput("unchanged", unchanged);
     setOutput("summary", JSON.stringify(results));
-    await summary.addHeading(inputs.dryRun ? "Label Blueprint dry-run" : "Label Blueprint").addTable([
+    const summary2 = summary.addHeading(
+      inputs.mode === "sync" ? "Label Blueprint" : `Label Blueprint ${inputs.mode}`
+    ).addTable([
       [
         { data: "Repository", header: true },
         { data: "Created", header: true },
@@ -27065,18 +27366,56 @@ async function run() {
         { data: "Unchanged", header: true }
       ],
       ...results.map((result) => [
-        result.repository,
+        escapeHtml(result.repository),
         String(result.created),
         String(result.updated),
         String(result.deleted),
         String(result.unchanged)
       ])
-    ]).write();
+    ]);
+    for (const sync of syncs) {
+      const rendered = renderChangeTable(sync.changes);
+      if (rendered.total > 0) {
+        const state = sync.result.dryRun ? "planned" : "applied";
+        summary2.addDetails(
+          `${escapeHtml(sync.result.repository)} \u2014 ${formatCount(rendered.total, `${state} change`)}`,
+          rendered.html
+        );
+        if (rendered.truncated) {
+          notice(
+            `Detailed summary for ${sync.result.repository} shows the first ${MAX_DETAILED_CHANGES} of ${rendered.total} changes`
+          );
+        }
+      }
+      const ignored = sync.ignored ?? [];
+      if (ignored.length > 0) {
+        summary2.addDetails(
+          `${escapeHtml(sync.result.repository)} \u2014 ${formatCount(ignored.length, "label")} protected from pruning`,
+          renderIgnoredLabels(ignored.map((label) => label.name))
+        );
+      }
+    }
+    await summary2.write();
+    const problems = [];
     if (failures.length > 0) {
-      throw new Error(
-        `Failed to synchronize ${failures.length} repository/repositories:
+      problems.push(
+        `Failed to synchronize ${formatCount(failures.length, "repository", "repositories")}:
 ${failures.join("\n")}`
       );
+    }
+    if (inputs.mode === "check") {
+      const driftedRepositories = results.filter(
+        (result) => result.created + result.updated + result.deleted > 0
+      ).length;
+      const driftedLabels = created + updated + deleted;
+      if (driftedLabels > 0) {
+        problems.push(
+          `Label drift detected in ${formatCount(driftedRepositories, "repository", "repositories")} affecting ${formatCount(driftedLabels, "label")}`
+        );
+      }
+    }
+    if (problems.length > 0) {
+      throw new Error(problems.join("\n\n"));
     }
   } catch (error2) {
     setFailed(error2.message);
