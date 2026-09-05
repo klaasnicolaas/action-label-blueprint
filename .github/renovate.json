@@ -21,7 +21,13 @@
     {
       "matchManagers": ["github-actions", "npm"],
       "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "non-major dependencies",
       "automerge": true
+    },
+    {
+      "matchPackageNames": ["vitest", "@vitest/coverage-v8"],
+      "groupName": "Vitest",
+      "automerge": false
     }
   ]
 }
