@@ -21,7 +21,13 @@
     {
       "matchManagers": ["github-actions", "npm"],
       "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "dependencies",
       "automerge": true
+    },
+    {
+      "matchPackageNames": ["vitest", "@vitest/**"],
+      "groupName": "vitest",
+      "automerge": false
     }
   ]
 }
