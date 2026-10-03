@@ -2,6 +2,7 @@ import type {
   LabelApi,
   LabelChange,
   LabelDefinition,
+  PruneStrategy,
   RepositoryLabel,
   RepositorySync,
 } from './types.js'
@@ -26,8 +27,7 @@ export function createPruneIgnoreMatcher(
   patterns: string[],
 ): (labelName: string) => boolean {
   const compiled = patterns.map(globPattern)
-  return (labelName) =>
-    compiled.some((pattern) => pattern.test(labelName))
+  return (labelName) => compiled.some((pattern) => pattern.test(labelName))
 }
 
 export interface LabelPlan {
@@ -51,6 +51,7 @@ export function planLabelChanges(
   desired: LabelDefinition[],
   prune: boolean,
   pruneIgnore: string[] = [],
+  pruneStrategy: PruneStrategy = 'delete',
 ): LabelPlan {
   const currentByName = new Map(
     current.map((label) => [keyOf(label.name), label]),
@@ -86,9 +87,9 @@ export function planLabelChanges(
     }
 
     claimed.add(keyOf(matched.name))
-    if (hasMetadataChanged(matched, label)) {
+    if (matched.archived || hasMetadataChanged(matched, label)) {
       changes.push({
-        kind: 'update',
+        kind: matched.archived ? 'unarchive' : 'update',
         name: label.name,
         previousName: matched.name,
         current: matched,
@@ -104,8 +105,12 @@ export function planLabelChanges(
       if (!claimed.has(keyOf(label.name))) {
         if (isIgnored(label.name)) {
           ignored.push(label)
-        } else {
-          changes.push({ kind: 'delete', name: label.name, current: label })
+        } else if (pruneStrategy === 'delete' || !label.archived) {
+          changes.push({
+            kind: pruneStrategy,
+            name: label.name,
+            current: label,
+          })
         }
       }
     }
@@ -121,6 +126,7 @@ export async function syncRepository(
   options: {
     prune: boolean
     pruneIgnore?: string[]
+    pruneStrategy?: PruneStrategy
     dryRun: boolean
   },
 ): Promise<RepositorySync> {
@@ -135,18 +141,21 @@ export async function syncRepository(
     desired,
     options.prune,
     options.pruneIgnore,
+    options.pruneStrategy,
   )
   if (!options.dryRun) {
     for (const change of changes) {
       if (change.kind === 'create') {
         await api.create(owner, repo, change.label)
-      } else if (change.kind === 'update') {
+      } else if (change.kind === 'update' || change.kind === 'unarchive') {
         await api.update(owner, repo, change.previousName, change.label)
       }
     }
     for (const change of changes) {
       if (change.kind === 'delete') {
         await api.remove(owner, repo, change.name)
+      } else if (change.kind === 'archive') {
+        await api.archive(owner, repo, change.name)
       }
     }
   }
@@ -162,6 +171,8 @@ export async function syncRepository(
       created: count('create'),
       updated: count('update'),
       deleted: count('delete'),
+      archived: count('archive'),
+      unarchived: count('unarchive'),
       unchanged: count('unchanged'),
       dryRun: options.dryRun,
     },

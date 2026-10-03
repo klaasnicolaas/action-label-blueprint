@@ -65,6 +65,7 @@ function renderChange(change: ChangedLabelChange): string[] {
       transition(ABSENT, name(change.label.name)),
       transition(ABSENT, color(change.label.color)),
       transition(ABSENT, description(change.label.description)),
+      transition(ABSENT, 'Active'),
     ]
   }
 
@@ -74,15 +75,28 @@ function renderChange(change: ChangedLabelChange): string[] {
       transition(name(change.current.name), ABSENT),
       transition(color(change.current.color), ABSENT),
       transition(description(change.current.description), ABSENT),
+      transition(change.current.archived ? 'Archived' : 'Active', ABSENT),
+    ]
+  }
+
+  if (change.kind === 'archive') {
+    return [
+      'Archive',
+      name(change.current.name),
+      UNCHANGED,
+      UNCHANGED,
+      transition('Active', 'Archived'),
     ]
   }
 
   const renamed = change.current.name !== change.label.name
   return [
-    renamed ? 'Rename' : 'Update',
+    change.kind === 'unarchive' ? 'Unarchive' : renamed ? 'Rename' : 'Update',
     renamed
       ? transition(name(change.current.name), name(change.label.name))
-      : UNCHANGED,
+      : change.kind === 'unarchive'
+        ? name(change.name)
+        : UNCHANGED,
     updateTransition(
       change.current.color.toLowerCase(),
       change.label.color.toLowerCase(),
@@ -93,6 +107,7 @@ function renderChange(change: ChangedLabelChange): string[] {
       change.label.description,
       description,
     ),
+    change.kind === 'unarchive' ? transition('Archived', 'Active') : UNCHANGED,
   ]
 }
 
@@ -122,7 +137,7 @@ export function renderChangeTable(
   return {
     html:
       notice +
-      `<table>${row(['Operation', 'Name', 'Color', 'Description'], true)}${rows.map((values) => row(values)).join('')}</table>`,
+      `<table>${row(['Operation', 'Name', 'Color', 'Description', 'State'], true)}${rows.map((values) => row(values)).join('')}</table>`,
     shown: visible.length,
     total: changed.length,
     truncated,

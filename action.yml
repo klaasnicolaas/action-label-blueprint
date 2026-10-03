@@ -20,9 +20,13 @@ inputs:
     required: false
     default: ""
   prune:
-    description: "Delete labels that are not present in the configuration."
+    description: "Prune labels that are not present in the configuration using prune-strategy."
     required: false
     default: "false"
+  prune-strategy:
+    description: "Pruning strategy: delete permanently removes labels; archive preserves historical assignments."
+    required: false
+    default: "delete"
   prune-ignore:
     description: "Comma- or newline-separated label names or glob patterns excluded from pruning."
     required: false
@@ -42,9 +46,13 @@ outputs:
   created:
     description: "Number of labels created across all repositories."
   updated:
-    description: "Number of labels updated or renamed across all repositories."
+    description: "Number of active labels updated or renamed across all repositories, excluding unarchived labels."
   deleted:
     description: "Number of labels deleted across all repositories."
+  archived:
+    description: "Number of labels archived across all repositories."
+  unarchived:
+    description: "Number of labels unarchived across all repositories, including any metadata changes."
   unchanged:
     description: "Number of labels that already matched the configuration."
   summary:
