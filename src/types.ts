@@ -9,9 +9,13 @@ export interface RepositoryLabel {
   name: string
   color: string
   description: string | null
+  archived: boolean
 }
 
-export type ChangeKind = 'create' | 'update' | 'delete' | 'unchanged'
+export type PruneStrategy = 'delete' | 'archive'
+
+export type ChangeKind =
+  'create' | 'update' | 'delete' | 'archive' | 'unarchive' | 'unchanged'
 
 export type LabelChange =
   | {
@@ -27,7 +31,19 @@ export type LabelChange =
       label: LabelDefinition
     }
   | {
+      kind: 'unarchive'
+      name: string
+      previousName: string
+      current: RepositoryLabel
+      label: LabelDefinition
+    }
+  | {
       kind: 'delete'
+      name: string
+      current: RepositoryLabel
+    }
+  | {
+      kind: 'archive'
       name: string
       current: RepositoryLabel
     }
@@ -42,6 +58,8 @@ export interface SyncResult {
   created: number
   updated: number
   deleted: number
+  archived: number
+  unarchived: number
   unchanged: number
   dryRun: boolean
 }
@@ -61,5 +79,6 @@ export interface LabelApi {
     currentName: string,
     label: LabelDefinition,
   ): Promise<void>
+  archive(owner: string, repo: string, name: string): Promise<void>
   remove(owner: string, repo: string, name: string): Promise<void>
 }

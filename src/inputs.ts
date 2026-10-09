@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import type { PruneStrategy } from './types.js'
 
 export type ActionMode = 'sync' | 'preview' | 'check'
 
@@ -7,6 +8,7 @@ export interface ActionInputs {
   labelsFile: string
   repositories: string[]
   prune: boolean
+  pruneStrategy: PruneStrategy
   pruneIgnore: string[]
   mode: ActionMode
 }
@@ -14,9 +16,7 @@ export interface ActionInputs {
 export function parseMode(value: string, legacyDryRun: boolean): ActionMode {
   const mode = value.trim().toLowerCase() || 'sync'
   if (mode !== 'sync' && mode !== 'preview' && mode !== 'check') {
-    throw new Error(
-      `Invalid mode "${mode}": expected sync, preview, or check`,
-    )
+    throw new Error(`Invalid mode "${mode}": expected sync, preview, or check`)
   }
   return legacyDryRun && mode === 'sync' ? 'preview' : mode
 }
@@ -57,6 +57,16 @@ export function parsePruneIgnore(value: string): string[] {
   return [...patterns.values()]
 }
 
+export function parsePruneStrategy(value: string): PruneStrategy {
+  const strategy = value.trim().toLowerCase() || 'delete'
+  if (strategy !== 'delete' && strategy !== 'archive') {
+    throw new Error(
+      `Invalid prune-strategy "${strategy}": expected delete or archive`,
+    )
+  }
+  return strategy
+}
+
 export function getInputs(defaultRepository: string): ActionInputs {
   const legacyDryRun = core.getBooleanInput('dry-run')
   return {
@@ -67,6 +77,7 @@ export function getInputs(defaultRepository: string): ActionInputs {
       defaultRepository,
     ),
     prune: core.getBooleanInput('prune'),
+    pruneStrategy: parsePruneStrategy(core.getInput('prune-strategy')),
     pruneIgnore: parsePruneIgnore(core.getInput('prune-ignore')),
     mode: parseMode(core.getInput('mode'), legacyDryRun),
   }

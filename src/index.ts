@@ -13,8 +13,11 @@ import { syncRepository } from './sync.js'
 import type { LabelChange, RepositorySync, SyncResult } from './types.js'
 
 function describeChange(change: LabelChange): string {
-  if (change.kind === 'update' && change.previousName !== change.name) {
-    return `update ${change.previousName} → ${change.name}`
+  if (
+    (change.kind === 'update' || change.kind === 'unarchive') &&
+    change.previousName !== change.name
+  ) {
+    return `${change.kind} ${change.previousName} → ${change.name}`
   }
   return `${change.kind} ${change.name}`
 }
@@ -60,6 +63,7 @@ export async function run(): Promise<void> {
         try {
           const sync = await syncRepository(api, repository, labels, {
             prune: inputs.prune,
+            pruneStrategy: inputs.pruneStrategy,
             pruneIgnore: inputs.pruneIgnore,
             dryRun,
           })
@@ -82,11 +86,15 @@ export async function run(): Promise<void> {
     const created = total(results, 'created')
     const updated = total(results, 'updated')
     const deleted = total(results, 'deleted')
+    const archived = total(results, 'archived')
+    const unarchived = total(results, 'unarchived')
     const unchanged = total(results, 'unchanged')
     core.setOutput('repositories', results.length)
     core.setOutput('created', created)
     core.setOutput('updated', updated)
     core.setOutput('deleted', deleted)
+    core.setOutput('archived', archived)
+    core.setOutput('unarchived', unarchived)
     core.setOutput('unchanged', unchanged)
     core.setOutput('summary', JSON.stringify(results))
 
@@ -102,6 +110,8 @@ export async function run(): Promise<void> {
           { data: 'Created', header: true },
           { data: 'Updated', header: true },
           { data: 'Deleted', header: true },
+          { data: 'Archived', header: true },
+          { data: 'Unarchived', header: true },
           { data: 'Unchanged', header: true },
         ],
         ...results.map((result) => [
@@ -109,6 +119,8 @@ export async function run(): Promise<void> {
           String(result.created),
           String(result.updated),
           String(result.deleted),
+          String(result.archived),
+          String(result.unarchived),
           String(result.unchanged),
         ]),
       ])
@@ -148,9 +160,15 @@ export async function run(): Promise<void> {
 
     if (inputs.mode === 'check') {
       const driftedRepositories = results.filter(
-        (result) => result.created + result.updated + result.deleted > 0,
+        (result) =>
+          result.created +
+            result.updated +
+            result.deleted +
+            result.archived +
+            result.unarchived >
+          0,
       ).length
-      const driftedLabels = created + updated + deleted
+      const driftedLabels = created + updated + deleted + archived + unarchived
       if (driftedLabels > 0) {
         problems.push(
           `Label drift detected in ${formatCount(driftedRepositories, 'repository', 'repositories')} affecting ${formatCount(driftedLabels, 'label')}`,
