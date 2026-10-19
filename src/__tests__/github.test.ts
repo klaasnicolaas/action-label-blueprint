@@ -10,7 +10,9 @@ describe('createLabelApi', () => {
     const deleteLabel = vi.fn().mockResolvedValue(undefined)
     const paginate = vi
       .fn()
-      .mockResolvedValue([{ name: 'bug', color: 'D73A4A', description: null }])
+      .mockResolvedValue([
+        { name: 'bug', color: 'D73A4A', description: null, archived_at: null },
+      ])
     const client = {
       paginate,
       rest: {
@@ -33,7 +35,7 @@ describe('createLabelApi', () => {
     }
 
     await expect(api.list('owner', 'repo')).resolves.toEqual([
-      { name: 'bug', color: 'D73A4A', description: null },
+      { name: 'bug', color: 'D73A4A', description: null, archived: false },
     ])
     expect(paginate).toHaveBeenCalledWith(listLabelsForRepo, {
       owner: 'owner',
@@ -59,11 +61,76 @@ describe('createLabelApi', () => {
       new_name: 'bug',
       color: 'd73a4a',
       description: '',
+      archived: false,
     })
     expect(deleteLabel).toHaveBeenCalledWith({
       owner: 'owner',
       repo: 'repo',
       name: 'old',
+    })
+  })
+
+  it('recognizes archived labels and treats missing archive metadata as active', async () => {
+    const labels = [
+      { name: 'legacy', color: 'ffffff', description: null },
+      { name: 'active', color: 'ffffff', description: null, archived_at: null },
+      {
+        name: 'archived',
+        color: '000000',
+        description: 'Historical label',
+        archived_at: '2026-10-01T12:00:00Z',
+      },
+    ]
+    const client = {
+      paginate: vi.fn().mockResolvedValue(labels),
+      rest: { issues: { listLabelsForRepo: vi.fn() } },
+    }
+    const api = createLabelApi(
+      client as unknown as Parameters<typeof createLabelApi>[0],
+    )
+
+    await expect(api.list('owner', 'repo')).resolves.toEqual([
+      { name: 'legacy', color: 'ffffff', description: null, archived: false },
+      { name: 'active', color: 'ffffff', description: null, archived: false },
+      {
+        name: 'archived',
+        color: '000000',
+        description: 'Historical label',
+        archived: true,
+      },
+    ])
+  })
+
+  it('archives without changing metadata and unarchives with desired metadata', async () => {
+    const updateLabel = vi.fn().mockResolvedValue(undefined)
+    const client = { rest: { issues: { updateLabel } } }
+    const api = createLabelApi(
+      client as unknown as Parameters<typeof createLabelApi>[0],
+    )
+    const label: LabelDefinition = {
+      name: 'bug',
+      color: 'd73a4a',
+      description: 'Something is broken',
+      aliases: ['defect'],
+    }
+
+    await api.archive('owner', 'repo', 'obsolete')
+    await api.update('owner', 'repo', 'defect', label)
+
+    expect(updateLabel).toHaveBeenNthCalledWith(1, {
+      owner: 'owner',
+      repo: 'repo',
+      name: 'obsolete',
+      archived: true,
+    })
+    expect(updateLabel).toHaveBeenNthCalledWith(2, {
+      owner: 'owner',
+      repo: 'repo',
+      name: 'defect',
+      new_name: 'bug',
+      color: 'd73a4a',
+      description: 'Something is broken',
+      archived: false,
     })
   })
 })

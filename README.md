@@ -39,9 +39,10 @@ same configuration can optionally be applied to multiple repositories.
 ## Features
 
 - **Declarative Label Management**: Define the desired label state in a version-controlled YAML or JSON file.
-- **Automatic Reconciliation**: Create missing labels and update names, colors and descriptions that have changed.
+- **Automatic Reconciliation**: Create missing labels, restore archived labels and update names, colors and descriptions that have changed.
 - **Assignment-Safe Renames**: Rename existing labels through aliases while preserving their issue and pull request assignments.
 - **Non-Destructive by Default**: Keep unmanaged labels unless pruning is explicitly enabled.
+- **Archive Pruning**: Archive unmanaged labels while preserving historical assignments, and automatically restore them when they return to the blueprint.
 - **Explicit Operating Modes**: Synchronize labels, preview changes or enforce the blueprint in CI.
 - **Detailed Change Summaries**: Review grouped before-and-after values for every planned or applied change.
 - **Composable Blueprints**: Share label baselines through local or remote configurations and override only what a repository needs.
@@ -100,16 +101,17 @@ jobs:
 `pull-requests: write` is not required: GitHub manages labels for issues and
 pull requests through the Issues labels API.
 
-The configuration is the desired state. Labels that do not exist are created,
-changed labels are updated and aliases are renamed without losing their issue
-or pull request assignments. Other labels remain untouched unless `prune` is
-enabled.
+The configuration is the desired active label set. Labels that do not exist are
+created, changed labels are updated and aliases are renamed without losing their
+issue or pull request assignments. Archived labels present in the blueprint are
+automatically unarchived, even when pruning is disabled. Other labels remain
+untouched unless `prune` is enabled.
 
 ## Advanced usage
 
 ### Preview and prune
 
-Preview the exact changes without calling create, update or delete endpoints:
+Preview the exact changes without modifying repository labels:
 
 ```yaml
 - uses: klaasnicolaas/action-label-blueprint@v1
@@ -120,7 +122,25 @@ Preview the exact changes without calling create, update or delete endpoints:
 
 After reviewing the job summary, switch `mode` back to `sync`. Enabling
 `prune` deletes all repository labels that are not represented by a configured
-label or a matched alias. Pruning is intentionally disabled by default.
+label or a matched alias, including archived labels. Pruning is intentionally
+disabled by default, and `delete` remains the default strategy for v1.
+
+To preserve label assignments on existing issues and pull requests, use archive
+pruning instead:
+
+```yaml
+- uses: klaasnicolaas/action-label-blueprint@v1
+  with:
+    prune: true
+    prune-strategy: archive
+```
+
+Unmanaged active labels are archived, and labels that are already archived are
+left untouched. If an archived label returns to the blueprint, the action
+unarchives it and reconciles its name, color and description in one operation.
+Aliases also restore and rename archived labels while preserving assignments.
+The blueprint always defines active labels; archived state is not a per-label
+configuration option.
 
 Labels managed by another app or automation can be protected with `prune-ignore`:
 
@@ -134,7 +154,7 @@ Labels managed by another app or automation can be protected with `prune-ignore`
       release:*
 ```
 
-Patterns match the complete label name case-insensitively. `*` matches any number of characters and `?` matches one character; all other characters are treated literally. Exact names and patterns may be separated by commas or newlines. Protected labels are shown in the action log and job summary and are never deleted by pruning.
+Patterns match the complete label name case-insensitively. `*` matches any number of characters and `?` matches one character; all other characters are treated literally. Exact names and patterns may be separated by commas or newlines. Protected labels are shown in the action log and job summary and are never deleted or archived by pruning. This protection applies only to unmanaged labels; a matching label in the blueprint is still reconciled and unarchived when needed.
 
 ### Enforce the blueprint in CI
 
@@ -149,10 +169,12 @@ repositories differ from the blueprint:
 
 The action still writes its outputs and job summary before failing, so the
 planned changes remain available for review. Check mode never modifies labels.
+Archive and unarchive operations count as drift. With archive pruning, unmanaged
+labels that are already archived do not cause drift.
 
 ### Review detailed changes
 
-The job summary keeps its aggregate repository table and adds a collapsed detail table for every repository with changes. Each row identifies a create, update, rename or delete and shows the relevant before-and-after label name, color and description. Unchanged fields in updates are shown as an em dash (`—`).
+The job summary keeps its aggregate repository table and adds a collapsed detail table for every repository with changes. Each row identifies a create, update, rename, delete, archive or unarchive and shows the relevant before-and-after label name, color, description and active/archived state. Unarchive rows also show any combined rename or metadata changes. Unchanged fields in updates are shown as an em dash (`—`).
 
 Detail headings distinguish changes that were `planned` in `preview` and `check` modes from changes that were `applied` in `sync` mode. Values are escaped before rendering, and colors are displayed as normalized hexadecimal values. To keep large summaries manageable, detail tables show at most the first 100 changes per repository and include a truncation notice.
 
@@ -238,10 +260,23 @@ format. Leave this unset to manage the repository running the workflow.
 
 ### `prune`
 
-Delete labels that are absent from the configuration. This can be destructive,
-so pruning is disabled by default.
+Prune labels that are absent from the configuration using `prune-strategy`.
+Pruning is disabled by default.
 
 - Default: `false`
+- Usage: **Optional**
+
+### `prune-strategy`
+
+Choose what happens to unmanaged labels when `prune` is enabled:
+
+- `delete`: Permanently delete labels and remove their existing assignments.
+- `archive`: Archive labels while preserving their historical issue and pull request assignments. Labels that are already archived remain untouched.
+
+This input only affects pruning. Archived labels present in the blueprint are
+always unarchived, regardless of the strategy or whether pruning is enabled.
+
+- Default: `delete`
 - Usage: **Optional**
 
 ### `prune-ignore`
@@ -285,11 +320,22 @@ The total number of labels created or planned for creation.
 
 ### `updated`
 
-The total number of labels updated, renamed or planned for updating.
+The total number of active labels updated, renamed or planned for updating.
+Labels restored from archived state are counted in `unarchived` instead.
 
 ### `deleted`
 
 The total number of labels deleted or planned for deletion.
+
+### `archived`
+
+The total number of labels archived or planned for archiving.
+
+### `unarchived`
+
+The total number of labels unarchived or planned for unarchiving, including any
+name, color or description changes applied during restoration. Each restored
+label is counted once here, rather than in `updated`.
 
 ### `unchanged`
 
@@ -306,6 +352,8 @@ A JSON array containing synchronization counts for each repository.
     "created": 1,
     "updated": 2,
     "deleted": 0,
+    "archived": 1,
+    "unarchived": 1,
     "unchanged": 5,
     "dryRun": false
   }

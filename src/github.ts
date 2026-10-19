@@ -18,6 +18,9 @@ export function createLabelApi(client: Octokit): LabelApi {
         name: label.name,
         color: label.color,
         description: label.description,
+        // Octokit does not yet include archive metadata in its label types.
+        archived:
+          'archived_at' in label && typeof label.archived_at === 'string',
       }))
     },
 
@@ -39,6 +42,16 @@ export function createLabelApi(client: Octokit): LabelApi {
         new_name: label.name,
         color: label.color,
         description: label.description ?? '',
+        archived: false,
+      })
+    },
+
+    async archive(owner, repo, name): Promise<void> {
+      await client.rest.issues.updateLabel({
+        owner,
+        repo,
+        name,
+        archived: true,
       })
     },
 

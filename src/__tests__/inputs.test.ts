@@ -11,6 +11,7 @@ import {
   getInputs,
   parseMode,
   parsePruneIgnore,
+  parsePruneStrategy,
   parseRepositories,
 } from '../inputs.js'
 
@@ -94,8 +95,48 @@ describe('getInputs', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: true,
+      pruneStrategy: 'delete',
       pruneIgnore: ['dependencies', 'release:*'],
       mode: 'sync',
     })
+  })
+
+  it('reads archive pruning from the action input', () => {
+    coreMocks.getInput.mockImplementation((name: string) => {
+      const values: Record<string, string> = {
+        'github-token': 'token',
+        'labels-file': 'labels.yml',
+        'prune-strategy': 'archive',
+      }
+      return values[name] ?? ''
+    })
+    coreMocks.getBooleanInput.mockImplementation(
+      (name: string) => name === 'prune',
+    )
+
+    expect(getInputs('owner/repo')).toMatchObject({
+      prune: true,
+      pruneStrategy: 'archive',
+    })
+  })
+})
+
+describe('parsePruneStrategy', () => {
+  it.each(['delete', 'archive'] as const)('accepts %s pruning', (strategy) => {
+    expect(parsePruneStrategy(strategy)).toBe(strategy)
+  })
+
+  it('defaults to delete for backwards compatibility', () => {
+    expect(parsePruneStrategy('')).toBe('delete')
+  })
+
+  it('normalizes whitespace and casing', () => {
+    expect(parsePruneStrategy(' ARCHIVE ')).toBe('archive')
+  })
+
+  it('rejects unsupported strategies', () => {
+    expect(() => parsePruneStrategy(' KEEP ')).toThrow(
+      'Invalid prune-strategy "keep": expected delete or archive',
+    )
   })
 })

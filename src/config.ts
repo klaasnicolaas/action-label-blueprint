@@ -125,11 +125,7 @@ function validatePartialLabel(
     )
   }
   if (Object.hasOwn(label, 'aliases')) {
-    result.aliases = validateAliases(
-      label.aliases,
-      name,
-      `${location}.aliases`,
-    )
+    result.aliases = validateAliases(label.aliases, name, `${location}.aliases`)
   }
   return result
 }
@@ -140,11 +136,15 @@ function parseExtends(value: unknown): string[] {
   }
   const sources = typeof value === 'string' ? [value] : value
   if (!Array.isArray(sources)) {
-    throw new Error('configuration.extends must be a string or array of strings')
+    throw new Error(
+      'configuration.extends must be a string or array of strings',
+    )
   }
   return sources.map((source, index) => {
     if (typeof source !== 'string' || source.trim() === '') {
-      throw new Error(`configuration.extends[${index}] must be a non-empty string`)
+      throw new Error(
+        `configuration.extends[${index}] must be a non-empty string`,
+      )
     }
     return source.trim()
   })
@@ -250,7 +250,10 @@ function sourceFrom(location: string, importer?: ConfigSource): ConfigSource {
     return { location: url.toString(), remote: true }
   }
   return {
-    location: resolve(importer ? dirname(importer.location) : process.cwd(), location),
+    location: resolve(
+      importer ? dirname(importer.location) : process.cwd(),
+      location,
+    ),
     remote: false,
   }
 }
@@ -275,7 +278,9 @@ async function readRemoteConfig(
     signal: context.signal,
   })
   if (!response.ok) {
-    throw new Error(`Unable to fetch ${source.location}: HTTP ${response.status}`)
+    throw new Error(
+      `Unable to fetch ${source.location}: HTTP ${response.status}`,
+    )
   }
   const contentLength = Number(response.headers.get('content-length') ?? 0)
   if (

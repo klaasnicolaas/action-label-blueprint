@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { LabelApi } from '../types.js'
 
 const mocks = vi.hoisted(() => {
   const summary = {
@@ -58,6 +59,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneStrategy: 'delete',
       pruneIgnore: [],
       mode: 'preview',
     })
@@ -81,6 +83,8 @@ describe('run', () => {
           created: 1,
           updated: 1,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 0,
           dryRun: true,
         },
@@ -103,6 +107,7 @@ describe('run', () => {
               name: 'documentation',
               color: 'ffffff',
               description: 'Old docs',
+              archived: false,
             },
             label: {
               name: 'docs',
@@ -119,6 +124,8 @@ describe('run', () => {
           created: 0,
           updated: 0,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 1,
           dryRun: true,
         },
@@ -126,7 +133,12 @@ describe('run', () => {
           {
             kind: 'unchanged',
             name: 'bug',
-            current: { name: 'bug', color: 'd73a4a', description: null },
+            current: {
+              name: 'bug',
+              color: 'd73a4a',
+              description: null,
+              archived: false,
+            },
           },
         ],
       })
@@ -156,6 +168,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one'],
       prune: true,
+      pruneStrategy: 'delete',
       pruneIgnore: ['dependencies'],
       mode: 'preview',
     })
@@ -165,11 +178,20 @@ describe('run', () => {
         created: 0,
         updated: 0,
         deleted: 0,
+        archived: 0,
+        unarchived: 0,
         unchanged: 0,
         dryRun: true,
       },
       changes: [],
-      ignored: [{ name: 'Dependencies', color: '0366d6', description: null }],
+      ignored: [
+        {
+          name: 'Dependencies',
+          color: '0366d6',
+          description: null,
+          archived: false,
+        },
+      ],
     })
 
     await run()
@@ -190,6 +212,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one'],
       prune: false,
+      pruneStrategy: 'delete',
       pruneIgnore: [],
       mode: 'sync',
     })
@@ -199,6 +222,8 @@ describe('run', () => {
         created: 1,
         updated: 0,
         deleted: 0,
+        archived: 0,
+        unarchived: 0,
         unchanged: 0,
         dryRun: false,
       },
@@ -224,6 +249,7 @@ describe('run', () => {
       expect.any(Array),
       {
         prune: false,
+        pruneStrategy: 'delete',
         pruneIgnore: [],
         dryRun: false,
       },
@@ -246,6 +272,8 @@ describe('run', () => {
           created: 0,
           updated: 0,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 1,
           dryRun: true,
         },
@@ -268,6 +296,7 @@ describe('run', () => {
               name: 'docs',
               color: 'ffffff',
               description: null,
+              archived: false,
             },
             label: {
               name: 'docs',
@@ -294,6 +323,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneStrategy: 'delete',
       pruneIgnore: [],
       mode: 'check',
     })
@@ -304,6 +334,8 @@ describe('run', () => {
           created: 1,
           updated: 1,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 0,
           dryRun: true,
         },
@@ -315,6 +347,7 @@ describe('run', () => {
               name: 'stale',
               color: '000000',
               description: null,
+              archived: false,
             },
           },
         ],
@@ -325,6 +358,8 @@ describe('run', () => {
           created: 0,
           updated: 0,
           deleted: 1,
+          archived: 0,
+          unarchived: 0,
           unchanged: 1,
           dryRun: true,
         },
@@ -340,7 +375,7 @@ describe('run', () => {
       expect.anything(),
       expect.any(String),
       expect.any(Array),
-      { prune: false, pruneIgnore: [], dryRun: true },
+      { prune: false, pruneStrategy: 'delete', pruneIgnore: [], dryRun: true },
     )
     expect(mocks.setOutput).toHaveBeenCalledWith('created', 1)
     expect(mocks.setOutput).toHaveBeenCalledWith('updated', 1)
@@ -360,6 +395,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneStrategy: 'delete',
       pruneIgnore: [],
       mode: 'check',
     })
@@ -370,6 +406,8 @@ describe('run', () => {
           created: 0,
           updated: 0,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 1,
           dryRun: true,
         },
@@ -377,7 +415,12 @@ describe('run', () => {
           {
             kind: 'unchanged',
             name: 'bug',
-            current: { name: 'bug', color: 'd73a4a', description: null },
+            current: {
+              name: 'bug',
+              color: 'd73a4a',
+              description: null,
+              archived: false,
+            },
           },
         ],
       }),
@@ -407,6 +450,8 @@ describe('run', () => {
           created: 101,
           updated: 0,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 0,
           dryRun: true,
         },
@@ -418,6 +463,8 @@ describe('run', () => {
           created: 0,
           updated: 0,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 1,
           dryRun: true,
         },
@@ -441,6 +488,7 @@ describe('run', () => {
       labelsFile: 'labels.yml',
       repositories: ['owner/one', 'owner/two'],
       prune: false,
+      pruneStrategy: 'delete',
       pruneIgnore: [],
       mode: 'check',
     })
@@ -452,6 +500,8 @@ describe('run', () => {
           created: 1,
           updated: 0,
           deleted: 0,
+          archived: 0,
+          unarchived: 0,
           unchanged: 0,
           dryRun: true,
         },
@@ -484,5 +534,166 @@ describe('run', () => {
     await run()
 
     expect(mocks.setFailed).toHaveBeenCalledWith('Invalid configuration')
+  })
+
+  it.each(['sync', 'preview', 'check'] as const)(
+    'handles archive and unarchive operations end to end in %s mode',
+    async (mode) => {
+      const { syncRepository } =
+        await vi.importActual<typeof import('../sync.js')>('../sync.js')
+      mocks.syncRepository.mockImplementation(syncRepository)
+      mocks.getInputs.mockReturnValue({
+        token: 'token',
+        labelsFile: 'labels.yml',
+        repositories: ['owner/one', 'owner/two'],
+        prune: true,
+        pruneStrategy: 'archive',
+        pruneIgnore: [],
+        mode,
+      })
+      const api: LabelApi = {
+        list: vi.fn().mockResolvedValue([
+          { name: 'bug', color: 'd73a4a', description: null, archived: true },
+          { name: 'old', color: 'ffffff', description: null, archived: false },
+        ]),
+        create: vi.fn(),
+        update: vi.fn(),
+        archive: vi.fn(),
+        remove: vi.fn(),
+      }
+      mocks.createLabelApi.mockReturnValue(api)
+
+      await run()
+
+      expect(mocks.setOutput).toHaveBeenCalledWith('archived', 2)
+      expect(mocks.setOutput).toHaveBeenCalledWith('unarchived', 2)
+      expect(mocks.setOutput).toHaveBeenCalledWith('updated', 0)
+      expect(mocks.setOutput).toHaveBeenCalledWith('deleted', 0)
+      const summaryOutput = mocks.setOutput.mock.calls.find(
+        ([name]) => name === 'summary',
+      )![1]
+      expect(JSON.parse(summaryOutput)).toEqual(
+        ['owner/one', 'owner/two'].map((repository) => ({
+          repository,
+          created: 0,
+          updated: 0,
+          deleted: 0,
+          archived: 1,
+          unarchived: 1,
+          unchanged: 0,
+          dryRun: mode !== 'sync',
+        })),
+      )
+      expect(mocks.summary.addTable).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          ['owner/one', '0', '0', '0', '1', '1', '0'],
+          ['owner/two', '0', '0', '0', '1', '1', '0'],
+        ]),
+      )
+      expect(mocks.info).toHaveBeenCalledWith('archive old')
+      expect(mocks.info).toHaveBeenCalledWith('unarchive bug')
+      expect(mocks.summary.addDetails).toHaveBeenCalledWith(
+        `owner/one — 2 ${mode === 'sync' ? 'applied' : 'planned'} changes`,
+        expect.stringContaining('Active → Archived'),
+      )
+      expect(mocks.summary.addDetails).toHaveBeenCalledWith(
+        `owner/two — 2 ${mode === 'sync' ? 'applied' : 'planned'} changes`,
+        expect.stringContaining('Archived → Active'),
+      )
+      expect(api.create).not.toHaveBeenCalled()
+      expect(api.remove).not.toHaveBeenCalled()
+      if (mode === 'sync') {
+        expect(api.update).toHaveBeenCalledTimes(2)
+        expect(api.archive).toHaveBeenCalledTimes(2)
+      } else {
+        expect(api.update).not.toHaveBeenCalled()
+        expect(api.archive).not.toHaveBeenCalled()
+      }
+      if (mode === 'check') {
+        expect(mocks.setFailed).toHaveBeenCalledWith(
+          'Label drift detected in 2 repositories affecting 4 labels',
+        )
+        expect(mocks.summary.write.mock.invocationCallOrder[0]).toBeLessThan(
+          mocks.setFailed.mock.invocationCallOrder[0]!,
+        )
+      } else {
+        expect(mocks.setFailed).not.toHaveBeenCalled()
+      }
+    },
+  )
+
+  it.each(['archive', 'unarchive'] as const)(
+    'fails check mode when the only drift is %s',
+    async (kind) => {
+      const { syncRepository } =
+        await vi.importActual<typeof import('../sync.js')>('../sync.js')
+      mocks.syncRepository.mockImplementation(syncRepository)
+      mocks.getInputs.mockReturnValue({
+        token: 'token',
+        labelsFile: 'labels.yml',
+        repositories: ['owner/one'],
+        prune: kind === 'archive',
+        pruneStrategy: 'archive',
+        pruneIgnore: [],
+        mode: 'check',
+      })
+      const api: LabelApi = {
+        list: vi.fn().mockResolvedValue([
+          {
+            name: 'bug',
+            color: 'd73a4a',
+            description: null,
+            archived: kind === 'unarchive',
+          },
+          { name: 'old', color: 'ffffff', description: null, archived: false },
+        ]),
+        create: vi.fn(),
+        update: vi.fn(),
+        archive: vi.fn(),
+        remove: vi.fn(),
+      }
+      mocks.createLabelApi.mockReturnValue(api)
+
+      await run()
+
+      expect(mocks.setFailed).toHaveBeenCalledWith(
+        'Label drift detected in 1 repository affecting 1 label',
+      )
+      expect(api.update).not.toHaveBeenCalled()
+      expect(api.archive).not.toHaveBeenCalled()
+    },
+  )
+
+  it('passes archive check mode when unmanaged labels are already archived', async () => {
+    const { syncRepository } =
+      await vi.importActual<typeof import('../sync.js')>('../sync.js')
+    mocks.syncRepository.mockImplementation(syncRepository)
+    mocks.getInputs.mockReturnValue({
+      token: 'token',
+      labelsFile: 'labels.yml',
+      repositories: ['owner/one'],
+      prune: true,
+      pruneStrategy: 'archive',
+      pruneIgnore: [],
+      mode: 'check',
+    })
+    const api: LabelApi = {
+      list: vi.fn().mockResolvedValue([
+        { name: 'bug', color: 'd73a4a', description: null, archived: false },
+        { name: 'old', color: 'ffffff', description: null, archived: true },
+      ]),
+      create: vi.fn(),
+      update: vi.fn(),
+      archive: vi.fn(),
+      remove: vi.fn(),
+    }
+    mocks.createLabelApi.mockReturnValue(api)
+
+    await run()
+
+    expect(mocks.setOutput).toHaveBeenCalledWith('archived', 0)
+    expect(mocks.setOutput).toHaveBeenCalledWith('unarchived', 0)
+    expect(mocks.summary.addDetails).not.toHaveBeenCalled()
+    expect(mocks.setFailed).not.toHaveBeenCalled()
   })
 })
